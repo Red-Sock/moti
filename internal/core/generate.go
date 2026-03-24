@@ -3,10 +3,11 @@ package core
 import (
 	"context"
 	"errors"
-	"github.com/rs/zerolog/log"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/rs/zerolog/log"
 
 	"go.redsock.ru/rerrors"
 	"go.redsock.ru/toolbox"
@@ -41,16 +42,14 @@ func (c *Core) Generate(ctx context.Context, root, directory string) error {
 		q.Imports = append(q.Imports, modulePaths)
 	}
 
-	if c.generateOutDirs {
-		for _, plug := range q.Plugins {
-			if filepath.IsAbs(plug.Out) {
-				continue
-			}
+	for _, plug := range q.Plugins {
+		if filepath.IsAbs(plug.Out) {
+			continue
+		}
 
-			err := os.MkdirAll(plug.Out, os.ModePerm)
-			if err != nil {
-				return rerrors.Wrap(err, "os.MkdirAll")
-			}
+		err := os.MkdirAll(plug.Out, os.ModePerm)
+		if err != nil {
+			return rerrors.Wrap(err, "os.MkdirAll")
 		}
 	}
 

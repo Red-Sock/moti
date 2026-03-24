@@ -1,15 +1,15 @@
 package generate
 
 import (
-	"bytes"
 	"context"
 	"fmt"
+	"maps"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
 	"go.redsock.ru/rerrors"
 	"go.redsock.ru/toolbox"
 
@@ -47,19 +47,15 @@ type (
 	}
 )
 
-func (q Query) build() string {
-	var buf bytes.Buffer
-	buf.WriteString(q.Compiler)
+func (q Query) Build() (command string, args []string) {
+	command = q.Compiler
 
-	for _, imp := range q.Imports {
-		buf.WriteString(" -I")
-		buf.WriteString(imp)
+	for _, imp := range slices.Sorted(maps.Keys(q.getUniqueImports())) {
+		args = append(args, "-I "+imp)
 	}
 
 	for _, plug := range q.Plugins {
-		buf.WriteString(" --")
-		buf.WriteString(plug.Name)
-		buf.WriteString("_out=")
+		arg := "--" + plug.Name + "_out="
 
 		var opts []string
 		for k, v := range plug.Options {
@@ -71,32 +67,73 @@ func (q Query) build() string {
 		}
 
 		if len(opts) > 0 {
-			buf.WriteString(strings.Join(opts, ","))
-			buf.WriteByte(':')
+			arg += strings.Join(opts, ",") + ":"
 		}
 
-		buf.WriteString(plug.Out)
+		arg += plug.Out
+		args = append(args, arg)
 	}
 
 	for _, file := range q.Files {
-		buf.WriteByte(' ')
-		buf.WriteString(file)
+		args = append(args, file)
 	}
 
-	return buf.String()
+	return command, args
+}
+
+func (q Query) buildWithResponseFile(command string, args []string, _ string) (string, []string, string, error) {
+	tmpFile, err := os.CreateTemp("", "protoc-args-*.rsp")
+	if err != nil {
+		return command, args, "", err
+	}
+	tmpFileName := tmpFile.Name()
+
+	for _, arg := range args {
+		if strings.ContainsAny(arg, " \t\n\r\"'") {
+			arg = "\"" + strings.ReplaceAll(arg, "\"", "\\\"") + "\""
+		}
+		_, err = tmpFile.WriteString(arg + "\n")
+		if err != nil {
+			_ = tmpFile.Close()
+			return command, args, tmpFileName, err
+		}
+	}
+
+	err = tmpFile.Close()
+	if err != nil {
+		return command, args, tmpFileName, err
+	}
+
+	return command, []string{"@" + tmpFileName}, tmpFileName, nil
+}
+
+func (q Query) getUniqueImports() map[string]struct{} {
+	uniqueImports := make(map[string]struct{}, len(q.Imports)+len(q.Files))
+
+	for _, imp := range q.Imports {
+		if imp == "" {
+			continue
+		}
+		uniqueImports[imp] = struct{}{}
+	}
+
+	for _, file := range q.Files {
+		uniqueImports[filepath.Dir(file)] = struct{}{}
+	}
+
+	return uniqueImports
 }
 
 type Core struct {
-	deps            []string
-	logger          *zerolog.Logger
-	plugins         []Plugin
-	inputs          Inputs
-	console         console.Console
-	storage         storage.IStorage
-	moduleConfig    moduleconfig.IModuleConfig
-	lockFile        lockfile.ILockFile
-	protoRoot       string
-	generateOutDirs bool
+	deps         []string
+	logger       *zerolog.Logger
+	plugins      []Plugin
+	inputs       Inputs
+	console      console.Console
+	storage      storage.IStorage
+	moduleConfig moduleconfig.IModuleConfig
+	lockFile     lockfile.ILockFile
+	protoRoot    string
 }
 
 func New(
@@ -109,23 +146,21 @@ func New(
 	moduleConfig moduleconfig.IModuleConfig,
 	lockFile lockfile.ILockFile,
 	protoRoot string,
-	generateOutDirs bool,
 ) *Core {
 	return &Core{
-		deps:            deps,
-		logger:          logger,
-		plugins:         plugins,
-		inputs:          inputs,
-		console:         console,
-		storage:         storage,
-		moduleConfig:    moduleConfig,
-		lockFile:        lockFile,
-		protoRoot:       protoRoot,
-		generateOutDirs: generateOutDirs,
+		deps:         deps,
+		logger:       logger,
+		plugins:      plugins,
+		inputs:       inputs,
+		console:      console,
+		storage:      storage,
+		moduleConfig: moduleConfig,
+		lockFile:     lockFile,
+		protoRoot:    protoRoot,
 	}
 }
 
-func (c *Core) Generate(ctx context.Context, root, directory string) error {
+func (c *Core) Generate(ctx context.Context, root string, directories ...string) error {
 	q := Query{
 		Compiler: "protoc",
 		Imports: []string{
@@ -143,16 +178,14 @@ func (c *Core) Generate(ctx context.Context, root, directory string) error {
 		q.Imports = append(q.Imports, modulePaths)
 	}
 
-	if c.generateOutDirs {
-		for _, plug := range q.Plugins {
-			if filepath.IsAbs(plug.Out) {
-				continue
-			}
+	for _, plug := range q.Plugins {
+		if filepath.IsAbs(plug.Out) {
+			continue
+		}
 
-			err := os.MkdirAll(plug.Out, os.ModePerm)
-			if err != nil {
-				return rerrors.Wrap(err, "os.MkdirAll")
-			}
+		err := os.MkdirAll(plug.Out, os.ModePerm)
+		if err != nil {
+			return rerrors.Wrap(err, "os.MkdirAll")
 		}
 	}
 
@@ -201,35 +234,43 @@ func (c *Core) Generate(ctx context.Context, root, directory string) error {
 		return fmt.Errorf("module %s is not installed. Please run `moti install` first", module.Name)
 	}
 
-	fsWalker := fs.NewFSWalker(directory, "")
-	err := fsWalker.WalkDir(func(path string, err error) error {
-		switch {
-		case err != nil:
-			return err
-		case ctx.Err() != nil:
-			return ctx.Err()
-		case filepath.Ext(path) != ".proto":
-			return nil
-		case shouldIgnore(path, c.inputs.Dirs):
-			c.logger.Debug().Str("path", path).Msg("ignore")
+	for _, inp := range c.inputs.Dirs {
 
-			return nil
-		}
-
-		q.Files = append(q.Files, path)
-
-		return nil
-	})
-	if err != nil {
-		return rerrors.Wrap(err, "fsWalker.WalkDir")
 	}
 
-	cmd := q.build()
+	for _, directory := range directories {
+		fsWalker := fs.NewFSWalker(directory, "")
+		err := fsWalker.WalkDir(func(path string, err error) error {
+			switch {
+			case err != nil:
+				return err
+			case ctx.Err() != nil:
+				return ctx.Err()
+			case filepath.Ext(path) != ".proto":
+				return nil
+			case shouldIgnore(path, c.inputs.Dirs):
+				c.logger.Debug().Str("path", path).Msg("ignore")
 
-	log.Info().Msg("Run command")
-	println(cmd)
+				return nil
+			}
 
-	_, err = c.console.RunCmd(ctx, root, cmd)
+			q.Files = append(q.Files, filepath.Join(directory, path))
+
+			return nil
+		})
+		if err != nil {
+			return rerrors.Wrap(err, "fsWalker.WalkDir")
+		}
+	}
+
+	command, args := q.Build()
+
+	c.logger.Info().
+		Str("command", command).
+		Strs("args", args).
+		Msg("Run command")
+
+	_, err := c.console.RunCmd(ctx, root, command, args...)
 	if err != nil {
 		return rerrors.Wrap(err, "adapters.RunCmd")
 	}

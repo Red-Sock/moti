@@ -6,7 +6,6 @@ import (
 	"bytes"
 	"context"
 	"os/exec"
-	"strings"
 )
 
 type powershell struct{}
@@ -20,8 +19,7 @@ func (powershell) RunCmd(ctx context.Context, dir string, command string, comman
 	var stderr bytes.Buffer
 	var stdout bytes.Buffer
 
-	fullCommand := append([]string{command}, commandParams...)
-	cmd := exec.CommandContext(ctx, "powershell", "-NoProfile", "-NonInteractive", "-Command", strings.Join(fullCommand, " "))
+	cmd := exec.CommandContext(ctx, command, commandParams...)
 	cmd.Dir = dir
 	cmd.Stderr = &stderr
 	cmd.Stdout = &stdout

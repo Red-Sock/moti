@@ -100,17 +100,7 @@ func (c *Core) Initialize(ctx context.Context, disk DirWalker, defaultLinters []
 }
 
 func defaultConfig(defaultLinters []string) config.Config {
-	return config.Config{
-		Lint: config.LintConfig{
-			Use:                 defaultLinters,
-			AllowCommentIgnores: false,
-			EnumZeroValueSuffix: "_NONE",
-			ServiceSuffix:       "API",
-		},
-		BreakingCheck: config.BreakingCheck{
-			AgainstGitRef: "master",
-		},
-	}
+	return config.Config{}
 }
 
 func migrateFromBUF(disk FS, path string, defaultConfiguration config.Config) error {
@@ -153,14 +143,5 @@ func migrateFromBUF(disk FS, path string, defaultConfiguration config.Config) er
 func buildCfgFromBUF(cfg config.Config, bufConfig BUFConfig) config.Config {
 	return config.Config{
 		Deps: nil,
-		Lint: config.LintConfig{
-			Use:                 bufConfig.Lint.Use,
-			Except:              bufConfig.Lint.Except,
-			Ignore:              bufConfig.Lint.Ignore,
-			IgnoreOnly:          bufConfig.Lint.IgnoreOnly,
-			AllowCommentIgnores: bufConfig.Lint.AllowCommentIgnores,
-			EnumZeroValueSuffix: bufConfig.Lint.EnumZeroValueSuffix,
-			ServiceSuffix:       bufConfig.Lint.ServiceSuffix,
-		},
 	}
 }

@@ -3,6 +3,7 @@ package core
 
 import (
 	"errors"
+
 	"github.com/rs/zerolog"
 )
 
@@ -23,8 +24,7 @@ type Core struct {
 	breakingCheckConfig     BreakingCheckConfig
 	currentProjectGitWalker CurrentProjectGitWalker
 
-	protoRoot       string
-	generateOutDirs bool
+	protoRoot string
 }
 
 var (
@@ -48,7 +48,6 @@ func New(
 	currentProjectGitWalker CurrentProjectGitWalker,
 	breakingCheckConfig BreakingCheckConfig,
 	protoRoot string,
-	generateOutDirs bool,
 ) *Core {
 	return &Core{
 		rules:                   rules,
@@ -65,6 +64,5 @@ func New(
 		currentProjectGitWalker: currentProjectGitWalker,
 		breakingCheckConfig:     breakingCheckConfig,
 		protoRoot:               protoRoot,
-		generateOutDirs:         generateOutDirs,
 	}
 }

@@ -2,7 +2,6 @@ package generate
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/rs/zerolog/log"
 	"github.com/samber/lo"
@@ -13,8 +12,8 @@ import (
 	lockfile "go.redsock.ru/moti/internal/adapters/lock_file"
 	moduleconfig "go.redsock.ru/moti/internal/adapters/module_config"
 	"go.redsock.ru/moti/internal/adapters/storage"
+	"go.redsock.ru/moti/internal/commands"
 	"go.redsock.ru/moti/internal/config"
-	"go.redsock.ru/moti/internal/flags"
 	"go.redsock.ru/moti/internal/fs/fs"
 )
 
@@ -30,32 +29,24 @@ func (c Command) Command() *cobra.Command {
 	}
 
 	cmd.Flags().StringP("path", "p", ".", "set path to directory with proto files")
-	_ = cmd.MarkFlagRequired("path")
 
 	return cmd
 }
 
-func (c Command) Action(cmd *cobra.Command, args []string) error {
-	workingDir, err := os.Getwd()
+func (c Command) Action(cmd *cobra.Command, _ []string) error {
+	motiEnvironment, err := commands.GetEnvironment(cmd)
 	if err != nil {
-		return fmt.Errorf("os.Getwd: %w", err)
+		return rerrors.Wrap(err)
 	}
 
-	configPath, _ := cmd.Flags().GetString(flags.Config)
-	cfg, err := config.New(cmd.Context(), configPath)
-	if err != nil {
-		return fmt.Errorf("config.New: %w", err)
-	}
+	dirWalker := fs.NewFSWalker(motiEnvironment.WorkDir, ".")
 
-	dirWalker := fs.NewFSWalker(workingDir, ".")
-
-	app, err := buildCore(*cfg, dirWalker)
+	app, err := buildCore(motiEnvironment.MotiConfig, dirWalker)
 	if err != nil {
 		return fmt.Errorf("buildCore: %w", err)
 	}
 
-	dir, _ := cmd.Flags().GetString("path")
-	err = app.Generate(cmd.Context(), ".", dir)
+	err = app.Generate(cmd.Context(), ".")
 	if err != nil {
 		return fmt.Errorf("generator.Generate: %w", err)
 	}
@@ -103,7 +94,6 @@ func buildCore(cfg config.Config, dirWalker lockfile.DirWalker) (*Core, error) {
 		moduleCfg,
 		lockFile,
 		cfg.Generate.ProtoRoot,
-		cfg.Generate.GenerateOutDirs,
 	)
 
 	return app, nil

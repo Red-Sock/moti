@@ -2,17 +2,17 @@ package install
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
+	"go.redsock.ru/rerrors"
 
 	"go.redsock.ru/moti/internal/adapters/console"
 	lockfile "go.redsock.ru/moti/internal/adapters/lock_file"
 	moduleconfig "go.redsock.ru/moti/internal/adapters/module_config"
 	"go.redsock.ru/moti/internal/adapters/storage"
+	"go.redsock.ru/moti/internal/commands"
 	"go.redsock.ru/moti/internal/config"
-	"go.redsock.ru/moti/internal/flags"
 	"go.redsock.ru/moti/internal/fs/fs"
 )
 
@@ -31,25 +31,19 @@ func (c Command) Command() *cobra.Command {
 }
 
 func (c Command) Action(cmd *cobra.Command, args []string) error {
-	workingDir, err := os.Getwd()
+	e, err := commands.GetEnvironment(cmd)
 	if err != nil {
-		return fmt.Errorf("os.Getwd: %w", err)
+		return rerrors.Wrap(err, "error getting environment")
 	}
 
-	configPath, _ := cmd.Flags().GetString(flags.Config)
-	cfg, err := config.New(cmd.Context(), configPath)
-	if err != nil {
-		return fmt.Errorf("config.New: %w", err)
-	}
+	dirWalker := fs.NewFSWalker(e.WorkDir, ".")
 
-	dirWalker := fs.NewFSWalker(workingDir, ".")
-
-	app, err := buildCore(*cfg, dirWalker)
+	app, err := buildCore(e.MotiConfig, dirWalker)
 	if err != nil {
 		return fmt.Errorf("buildCore: %w", err)
 	}
 
-	err = app.Install(cmd.Context(), cfg.Deps)
+	err = app.Install(cmd.Context(), e.MotiConfig.Deps)
 	if err != nil {
 		return fmt.Errorf("install: %w", err)
 	}

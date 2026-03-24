@@ -1,11 +1,8 @@
 package rules
 
 import (
-	"fmt"
-
 	"github.com/samber/lo"
 
-	"go.redsock.ru/moti/internal/config"
 	"go.redsock.ru/moti/internal/core"
 )
 
@@ -18,7 +15,9 @@ const (
 )
 
 // New returns a map of rules and a map of ignore only rules by configuration.
-func New(cfg config.LintConfig) ([]core.Rule, map[string][]string, error) {
+func New() ([]core.Rule, map[string][]string, error) {
+	return []core.Rule{}, map[string][]string{}, nil
+
 	allRules := []core.Rule{
 		//	minGroup
 		&DirectorySamePackage{},
@@ -52,7 +51,7 @@ func New(cfg config.LintConfig) ([]core.Rule, map[string][]string, error) {
 		//	defaultGroup
 		&EnumValuePrefix{},
 		&EnumZeroValueSuffix{
-			Suffix: cfg.EnumZeroValueSuffix,
+			//Suffix: cfg.EnumZeroValueSuffix,
 		},
 		&FileLowerSnakeCase{},
 		&RPCRequestResponseUnique{},
@@ -60,7 +59,7 @@ func New(cfg config.LintConfig) ([]core.Rule, map[string][]string, error) {
 		&RPCResponseStandardName{},
 		&PackageVersionSuffix{},
 		&ServiceSuffix{
-			Suffix: cfg.ServiceSuffix,
+			//Suffix: cfg.ServiceSuffix,
 		},
 		//	commentsGroup
 		&CommentEnum{},
@@ -83,21 +82,23 @@ func New(cfg config.LintConfig) ([]core.Rule, map[string][]string, error) {
 		rules[ruleName] = rule
 	}
 
-	use := unwrapLintGroups(cfg.Use)
-	use = removeExcept(cfg.Except, use)
+	//use := unwrapLintGroups(cfg.Use)
+	//use = removeExcept(cfg.Except, use)
 
-	res := make([]core.Rule, len(use))
+	//res := make([]core.Rule, len(use))
+	//
+	//for i, ruleName := range use {
+	//	rule, ok := rules[ruleName]
+	//	if !ok {
+	//		return nil, nil, fmt.Errorf("%w: %s", core.ErrInvalidRule, ruleName)
+	//	}
+	//
+	//	res[i] = rule
+	//}
 
-	for i, ruleName := range use {
-		rule, ok := rules[ruleName]
-		if !ok {
-			return nil, nil, fmt.Errorf("%w: %s", core.ErrInvalidRule, ruleName)
-		}
+	//return res, unwrapIgnoreOnly(cfg.IgnoreOnly), nil
 
-		res[i] = rule
-	}
-
-	return res, unwrapIgnoreOnly(cfg.IgnoreOnly), nil
+	return nil, nil, nil
 }
 
 func unwrapIgnoreOnly(ignoreOnly map[string][]string) map[string][]string {

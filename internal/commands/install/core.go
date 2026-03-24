@@ -109,7 +109,7 @@ func (c *Core) InstallPackage(ctx context.Context, requestedModule models.Module
 		return fmt.Errorf("repository.Archive: %w", err)
 	}
 
-	moduleHash, err := s_install(c.storage, cacheDownloadPaths, requestedModule, revision, moduleConfig)
+	moduleHash, err := c.storage.Install(cacheDownloadPaths, requestedModule, revision, moduleConfig)
 	if err != nil {
 		return fmt.Errorf("c.storage.Install: %w", err)
 	}
@@ -122,8 +122,4 @@ func (c *Core) InstallPackage(ctx context.Context, requestedModule models.Module
 	}
 
 	return nil
-}
-
-func s_install(s storage.IStorage, cacheDownloadPaths models.CacheDownloadPaths, module models.Module, revision models.Revision, moduleConfig models.ModuleConfig) (models.ModuleHash, error) {
-	return s.Install(cacheDownloadPaths, module, revision, moduleConfig)
 }

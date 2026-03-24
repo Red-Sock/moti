@@ -2,30 +2,17 @@ cache_path: proto_modules
 
 deps:
   - github.com/googleapis/googleapis
-  - github.com/bufbuild/protovalidate@v0.3.1
-  - github.com/grpc-ecosystem/grpc-gateway@v2.19.1
 
 generate:
+#  proto_root: api/grpc
+  inputs:
+    - directory: "api/grpc"
   plugins:
     - name: go
-      out: .
+      out: pkg/api
       opts:
         paths: source_relative
     - name: go-grpc
-      out: .
-      opts:
-        paths: source_relative
-        require_unimplemented_servers: false
-    - name: grpc-gateway
-      out: .
-      opts:
-        paths: source_relative
-    - name: openapiv2
-      out: .
-      opts:
-        simple_operation_ids: false
-        generate_unbound_methods: false
-    - name: validate-go
-      out: .
+      out: pkg/api
       opts:
         paths: source_relative
