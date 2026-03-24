@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package same_package;
+
+import "google/protobuf/empty.proto";
+import "google/rpc/code.proto";
+
+option csharp_namespace = "ZergsLaw.BackTemplate.Api.Session.V1";
+option go_package = "github.com/ZergsLaw/back-template/api/session/v1;pb";
+option java_multiple_files = true;
+option java_package = "com.zergslaw.backtemplate.api.session.v1";
+option php_namespace = "ZergsLaw\\BackTemplate\\Api\\Session\\V1";
+option ruby_package = "ZergsLaw";
+option swift_prefix = "ZergsLaw.BackTemplate.Api.Session.V1";
+
+message Queue {}

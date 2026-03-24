@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package basic_example_api;
+
+option go_package = "go.redsock.ru/moti/examples/simple;basic_example_api";
+
+service BasicExampleApi {
+  rpc Hello(Hello.Request) returns (Hello.Response) {}
+}
+
+message Hello {
+  message Request{}
+  message Response{}
+}

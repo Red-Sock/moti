@@ -1,0 +1,87 @@
+syntax = "proto3";
+
+package api.session.v1;
+
+import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
+import "google/protobuf/timestamp.proto";
+
+option csharp_namespace = "ZergsLaw.BackTemplate.Api.Session.V1";
+option go_package = "github.com/ZergsLaw/back-template/api/session/v1;pb";
+option java_multiple_files = true;
+option java_package = "com.zergslaw.backtemplate.api.session.v1";
+option php_namespace = "ZergsLaw\\BackTemplate\\Api\\Session\\V1";
+option ruby_package = "ZergsLaw";
+option swift_prefix = "ZergsLaw.BackTemplate.Api.Session.V1";
+
+// Internal service API for managing user session.
+service SessionInternalAPI {
+  // Save new user's session and returns auth token.
+  rpc Save(SaveRequest) returns (SaveResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/session"
+      body: "*"
+    };
+  }
+
+  // Returns user's session info by token.
+  rpc Get(GetRequest) returns (GetResponse) {}
+
+  // Delete user's session by auth token.
+  rpc Delete(DeleteRequest) returns (DeleteResponse) {}
+}
+
+//---Must be filled out---
+message GetRequest {
+  // Contains auth token, which was send by Save handler.
+  string token = 1;
+}
+
+//---Must be filled out---
+message GetResponse {
+  // Contains session's UUID.
+  string session_id = 1 [(google.api.field_behavior) = REQUIRED];
+  // Contains user's UUID.
+  string user_id = 2;
+  // Contains user's session start time.
+  google.protobuf.Timestamp created_at = 3;
+}
+
+//---Must be filled out---
+message DeleteRequest {
+  // Contains session's UUID.
+  string session_id = 1;
+}
+
+//---Must be filled out---
+message DeleteResponse {}
+
+//---Must be filled out---
+message SaveRequest {
+  // Contains user UUID.
+  string user_id = 1;
+  // Contains user's origin IP.
+  string ip = 2;
+  // Contains user's client.
+  string user_agent = 3;
+  // Contains user's system.
+  bool system_v3 = 4;
+}
+
+//---Must be filled out---
+message SaveResponse {
+  // User's auth token.
+  string token = 1;
+}
+
+//---Must be filled out---
+enum SocialNetwork {
+  //---Must be filled out---
+  SOCIAL_NETWORK_NONE = 0;
+  //---Must be filled out---
+  SOCIAL_NETWORK_GOOGLE = 1;
+  //---Must be filled out---
+  SOCIAL_NETWORK_YAHOO = 2;
+  //---Must be filled out---
+  SOCIAL_NETWORK_FACEBOOK = 3;
+}

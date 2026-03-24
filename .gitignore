@@ -1,0 +1,9 @@
+.idea
+certs
+.env
+bin
+moti
+coverage.out
+moti.lock
+.DS_Store
+dist/

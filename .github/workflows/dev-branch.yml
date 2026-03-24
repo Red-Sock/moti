@@ -1,0 +1,43 @@
+name: Push
+run-name: ${{ github.REF_NAME }} pull request
+on:
+  push:
+    branches:
+      - RSI-*
+
+jobs:
+  create-pr:
+    runs-on: ${{ vars.UBUNTU_IMAGE }}
+    steps:
+      - name: Create PR
+        uses: RedSockActions/create_pr@v0.0.10
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          target-branch: master
+
+  build-and-test:
+    runs-on: ubuntu-24.04
+    needs:
+      - create-pr
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v4
+
+      - name: Setup dependencies
+        run: |
+          git config --global user.email "test@rscli.ru"
+          git config --global user.name "rscli_test"
+
+      - name: Install dependencies
+        run: go mod tidy
+
+      - name: Build
+        run: go build -v ./...
+
+      - name: Test with the Go CLI
+        run: go test ./...
+        env:
+          GOPATH: ${{ runner.workspace }}

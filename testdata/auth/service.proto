@@ -1,0 +1,63 @@
+syntax = "proto3";
+
+package Session;
+
+import weak "google/protobuf/empty.proto";
+import public "google/rpc/code.proto";
+
+option go_package = "github.com/ZergsLaw/back-template/api/session/v1;pb";
+
+service auth {
+  rpc Save(SessionInfo) returns (Result) {}
+  rpc Get(TokenData) returns (Session) {}
+  rpc delete(stream Delete_Info) returns (stream google.protobuf.Empty) {}
+  rpc GetByToken(TokenData) returns (Session) {}
+}
+
+message TokenData {
+  string token = 1;
+}
+
+message Session {
+  string session_id = 1;
+  string user_id = 2;
+}
+
+message Delete_Info {
+  string Session_id = 1;
+}
+
+message SessionInfo {
+  enum social_network {
+    option allow_alias = true;
+    none = 4;
+  }
+
+  string user_id = 1;
+  string ip = 2;
+  string user_agent = 3;
+  oneof SocialNetwork {
+    string email = 4;
+    string username = 5;
+  }
+}
+
+message Result {
+  string token = 1;
+}
+
+enum social_network {
+  option allow_alias = true;
+  none = 4;
+}
+
+
+// Product type.
+enum ProductType {
+  // For unknown value.
+  PRODUCT_TYPE_NONE = 0;
+  // Calculator.
+  PRODUCT_TYPE_CALCULATOR = 1;
+  // Mailing.
+  PRODUCT_TYPE_MAILING = 2;
+}
