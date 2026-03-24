@@ -21,8 +21,8 @@ func TestCheckNoLint(t *testing.T) {
 			fileName: noLintBufComment,
 			wantErr:  nil,
 		},
-		"no_lint_protopack_comment": {
-			fileName: noLintProtopackComment,
+		"no_lint_moti_comment": {
+			fileName: noLintmotiComment,
 			wantErr:  nil,
 		},
 	}

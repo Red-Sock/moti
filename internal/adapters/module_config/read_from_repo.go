@@ -17,9 +17,9 @@ func (c *ModuleConfig) ReadFromRepo(
 		return models.ModuleConfig{}, fmt.Errorf("readBufWork: %w", err)
 	}
 
-	modules, err := readProtoPack(ctx, repo, revision)
+	modules, err := readmoti(ctx, repo, revision)
 	if err != nil {
-		return models.ModuleConfig{}, fmt.Errorf("readProtoPack: %w", err)
+		return models.ModuleConfig{}, fmt.Errorf("readmoti: %w", err)
 	}
 
 	moduleConfig := models.ModuleConfig{

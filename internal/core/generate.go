@@ -22,6 +22,7 @@ const (
 )
 
 // Generate generates files.
+// deprecated: use internal/commands/generate.Core instead
 func (c *Core) Generate(ctx context.Context, root, directory string) error {
 	q := Query{
 		Compiler: defaultCompiler,

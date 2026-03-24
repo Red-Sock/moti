@@ -6,7 +6,7 @@ import (
 	"github.com/rs/zerolog"
 )
 
-// Core provide to business logic of ProtoPack.
+// deprecated: Use internal/commands/generate.Core instead for generation
 type Core struct {
 	rules        []Rule
 	ignore       []string
@@ -32,6 +32,7 @@ var (
 	ErrRepositoryDoesNotExist = errors.New("repository does not exist")
 )
 
+// deprecated: Use internal/commands/generate.New instead for generation
 func New(
 	rules []Rule,
 	ignore []string,

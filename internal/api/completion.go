@@ -18,10 +18,10 @@ func (c Completion) Command() *cobra.Command {
 
 Bash:
 
-  $ source <(protopack completion bash)
+  $ source <(moti completion bash)
 
   # To load completions for each session, add to your .bashrc:
-  $ protopack completion bash > /etc/bash_completion.d/protopack
+  $ moti completion bash > /etc/bash_completion.d/moti
 
 Zsh:
 
@@ -31,21 +31,21 @@ Zsh:
   $ echo "autoload -U compinit; compinit" >> ~/.zshrc
 
   # To load completions for each session, add to your .zshrc:
-  $ protopack completion zsh > "${fpath[1]}/_protopack"
+  $ moti completion zsh > "${fpath[1]}/_moti"
 
 Fish:
 
-  $ protopack completion fish | source
+  $ moti completion fish | source
 
   # To load completions for each session, add to your config.fish:
-  $ protopack completion fish > ~/.config/fish/completions/protopack.fish
+  $ moti completion fish > ~/.config/fish/completions/moti.fish
 
 PowerShell:
 
-  PS> protopack completion powershell | Out-String | Invoke-Expression
+  PS> moti completion powershell | Out-String | Invoke-Expression
 
   # To load completions for every new session, run:
-  PS> protopack completion powershell > protopack.ps1
+  PS> moti completion powershell > moti.ps1
   # and source this file from your PowerShell profile.
 `,
 		DisableFlagsInUseLine: true,

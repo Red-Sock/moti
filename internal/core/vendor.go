@@ -9,7 +9,7 @@ import (
 
 const (
 	// TODO: move to config
-	protopackVendorDir = "protopack_vendor"
+	motiVendorDir = "moti_vendor"
 )
 
 // Vendor copy all proto files from deps to local dir
@@ -24,7 +24,7 @@ func (c *Core) Vendor(ctx context.Context) error {
 			return fmt.Errorf("c.moduleReflect.GetModulePath: %w", err)
 		}
 
-		if err := cp.Copy(depPath, protopackVendorDir); err != nil {
+		if err := cp.Copy(depPath, motiVendorDir); err != nil {
 			return fmt.Errorf("c.Copy: %w", err)
 		}
 	}

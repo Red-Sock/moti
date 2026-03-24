@@ -11,7 +11,7 @@ import (
 
 var _ Handler = (*Init)(nil)
 
-// Init is a handler for initialization ProtoPack configuration.
+// Init is a handler for initialization moti configuration.
 type Init struct{}
 
 // Command implements Handler.

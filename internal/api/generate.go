@@ -13,10 +13,10 @@ import (
 
 var _ Handler = (*Generate)(nil)
 
-// Generate is a handler for generate command.
+// deprecated: use internal/commands/generate.Command instead
 type Generate struct{}
 
-// Command implements Handler.
+// deprecated: use internal/commands/generate.Command instead
 func (g Generate) Command() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "generate",
@@ -32,7 +32,7 @@ func (g Generate) Command() *cobra.Command {
 	return cmd
 }
 
-// Action implements Handler.
+// deprecated: use internal/commands/generate.Command instead
 func (g Generate) Action(cmd *cobra.Command, args []string) error {
 	workingDir, err := os.Getwd()
 	if err != nil {

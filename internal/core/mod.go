@@ -40,19 +40,4 @@ type (
 		IsEmpty() bool
 		DepsIter() iter.Seq[models.LockFileInfo]
 	}
-
-	// Mod implement package manager's commands
-	//Mod struct {
-	//	storage      Storage
-	//	moduleConfig ModuleConfig
-	//	lockFile     LockFile
-	//}
 )
-
-//func New(storage Storage, moduleConfig ModuleConfig, lockFile LockFile) *Mod {
-//	return &Mod{
-//		storage:      storage,
-//		moduleConfig: moduleConfig,
-//		lockFile:     lockFile,
-//	}
-//}

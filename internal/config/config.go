@@ -45,7 +45,7 @@ type InputDirectory struct {
 	Path string `yaml:"path"`
 }
 
-// Config is the configuration of protopack.
+// Config is the configuration of moti.
 type Config struct {
 	// LintConfig is the lint configuration.
 	Lint LintConfig `json:"lint" yaml:"lint"`

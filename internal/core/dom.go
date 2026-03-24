@@ -226,7 +226,7 @@ type (
 		Dirs          []string
 		InputGitRepos []InputGitRepo
 	}
-	// Config is the configuration for ProtoPack generate.
+	// Config is the configuration for moti generate.
 	Config struct {
 		Deps            []string
 		Plugins         []Plugin

@@ -1,4 +1,4 @@
-package simple
+package full
 
 import (
 	"testing"

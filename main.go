@@ -7,15 +7,17 @@ import (
 	"os"
 
 	"go.redsock.ru/moti/internal/api"
+	"go.redsock.ru/moti/internal/commands/generate"
+	"go.redsock.ru/moti/internal/commands/install"
 	"go.redsock.ru/moti/internal/flags"
 	"go.redsock.ru/moti/internal/version"
 )
 
 func main() {
 	rootCmd := &cobra.Command{
-		Use:     "protopack",
-		Short:   "protopack - usage info",
-		Long:    "protopack - description info",
+		Use:     "moti",
+		Short:   "moti - usage info",
+		Long:    "moti - description info",
 		Version: version.System(),
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
 			isDebug, _ := cmd.Flags().GetBool(flags.DebugMode)
@@ -31,7 +33,8 @@ func main() {
 		api.Mod{},
 		api.Completion{},
 		api.Init{},
-		api.Generate{},
+		generate.Command{},
+		install.Command{},
 		api.BreakingCheck{},
 	)
 

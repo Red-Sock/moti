@@ -14,32 +14,32 @@ import (
 	"go.redsock.ru/moti/internal/core/models"
 )
 
-// Config is the configuration of protopack.
+// Config is the configuration of moti.
 // FIXME: do not duplicate of struct
 // but if now will import from config -> cycles deps
-type protopackConfig struct {
+type motiConfig struct {
 	// Deps is the dependencies repositories
 	Deps []string `json:"deps" yaml:"deps"`
 }
 
-// readprotopack read protopack's config from repository
-func readProtoPack(ctx context.Context, repo repository.Repo, revision models.Revision) ([]models.Module, error) {
+// readmoti read moti's config from repository
+func readmoti(ctx context.Context, repo repository.Repo, revision models.Revision) ([]models.Module, error) {
 	content, err := repo.ReadFile(ctx, revision, default_consts.DefaultConfigFileName)
 	if err != nil {
 		if errors.Is(err, models.ErrFileNotFound) {
-			log.Debug().Msg("protopack config not found")
+			log.Debug().Msg("moti config not found")
 			return nil, nil
 		}
 		return nil, fmt.Errorf("repo.ReadFile: %w", err)
 	}
 
-	protopack := &protopackConfig{}
-	if err := yaml.NewDecoder(strings.NewReader(content)).Decode(&protopack); err != nil {
+	moti := &motiConfig{}
+	if err := yaml.NewDecoder(strings.NewReader(content)).Decode(&moti); err != nil {
 		return nil, fmt.Errorf("yaml.NewDecoder: %w", err)
 	}
 
-	modules := make([]models.Module, 0, len(protopack.Deps))
-	for _, dep := range protopack.Deps {
+	modules := make([]models.Module, 0, len(moti.Deps))
+	for _, dep := range moti.Deps {
 		module := models.NewModule(dep)
 		modules = append(modules, module)
 	}

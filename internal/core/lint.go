@@ -110,13 +110,13 @@ func CheckIsIgnored(comments []*parser.Comment, ruleName string) bool {
 	}
 
 	bufIgnore := bufLintIgnorePrefix + ruleName
-	protopackIgnore := lintIgnorePrefix + ruleName
+	motiIgnore := lintIgnorePrefix + ruleName
 
 	for _, comment := range comments {
 		if strings.Contains(comment.Raw, bufIgnore) {
 			return true
 		}
-		if strings.Contains(comment.Raw, protopackIgnore) {
+		if strings.Contains(comment.Raw, motiIgnore) {
 			return true
 		}
 	}

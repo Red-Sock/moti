@@ -7,14 +7,12 @@ import (
 	"context"
 	"os/exec"
 	"strings"
-
-	"go.redsock.ru/moti/internal/core"
 )
 
 type bash struct{}
 
-func New() core.Console {
-	return bash{}
+func New() *bash {
+	return &bash{}
 }
 
 func (bash) RunCmd(ctx context.Context, dir string, command string, commandParams ...string) (string, error) {

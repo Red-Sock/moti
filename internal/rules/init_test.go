@@ -26,7 +26,7 @@ const (
 	importUsed               = "./../../testdata/import_used/used.proto"
 	importNotUsed            = "./../../testdata/import_used/not_used.proto"
 	noLintBufComment         = "./../../testdata/no_lint/no_lint_buf_comment.proto"
-	noLintProtopackComment   = "./../../testdata/no_lint/no_lint_protopack_comment.proto"
+	noLintmotiComment        = "./../../testdata/no_lint/no_lint_moti_comment.proto"
 )
 
 func start(t testing.TB) (*require.Assertions, map[string]core.ProtoInfo) {
@@ -48,7 +48,7 @@ func start(t testing.TB) (*require.Assertions, map[string]core.ProtoInfo) {
 		importUsed:               parseFile(t, assert, importUsed),
 		importNotUsed:            parseFile(t, assert, importNotUsed),
 		noLintBufComment:         parseFile(t, assert, noLintBufComment),
-		noLintProtopackComment:   parseFile(t, assert, noLintProtopackComment),
+		noLintmotiComment:        parseFile(t, assert, noLintmotiComment),
 	}
 
 	return assert, protos

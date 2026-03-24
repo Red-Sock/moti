@@ -11,8 +11,8 @@ import (
 
 type powershell struct{}
 
-func New() core.Console {
-	return powershell{}
+func New() *powershell {
+	return &powershell{}
 }
 
 // RunCmd executes a shell command.

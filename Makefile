@@ -1,2 +1,2 @@
 build:
-	go build -o moti main.go
+	go build -o $(GOBIN)/moti main.go

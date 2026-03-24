@@ -15,7 +15,7 @@ import (
 func (c *Core) Download(ctx context.Context, dependencies []string) error {
 	if c.lockFile.IsEmpty() {
 		// if lock file is empty or doesn't exist install versions
-		// from protopack.yaml config and create lock file
+		// from moti.yaml config and create lock file
 		log.Debug().Msg("Lock file is empty")
 		return c.Update(ctx, dependencies)
 	}

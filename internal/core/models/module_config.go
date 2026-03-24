@@ -6,6 +6,6 @@ type ModuleConfig struct {
 	Directories []string
 
 	// Dependencies contains list of required dependencies in repository
-	// it could be from protopack.yaml or from buf
+	// it could be from moti.yaml or from buf
 	Dependencies []Module
 }

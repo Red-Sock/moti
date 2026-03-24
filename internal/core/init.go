@@ -55,7 +55,7 @@ type (
 	}
 )
 
-// Initialize initializes the ProtoPack configuration.
+// Initialize initializes the moti configuration.
 func (c *Core) Initialize(ctx context.Context, disk DirWalker, defaultLinters []string) error {
 	cfg := defaultConfig(defaultLinters)
 
@@ -84,7 +84,7 @@ func (c *Core) Initialize(ctx context.Context, disk DirWalker, defaultLinters []
 	}
 
 	if !migrated {
-		filename := "protopack.yaml"
+		filename := "moti.yaml"
 		res, err := disk.Create(filename)
 		if err != nil {
 			return fmt.Errorf("disk.Create: %w", err)
@@ -136,7 +136,7 @@ func migrateFromBUF(disk FS, path string, defaultConfiguration config.Config) er
 
 	dir := filepath.Dir(path)
 
-	filename := filepath.Join(dir, "protopack.yaml")
+	filename := filepath.Join(dir, "moti.yaml")
 	res, err := disk.Create(filename)
 	if err != nil {
 		return fmt.Errorf("disk.Create: %w", err)

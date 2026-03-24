@@ -24,6 +24,7 @@ func errExit(code int, msg string, args ...any) {
 	os.Exit(code)
 }
 
+// deprecated: use internal/commands/generate.buildCore instead
 func buildCore(_ context.Context, cfg config.Config, dirWalker core.DirWalker) (*core.Core, error) {
 	lintRules, ignoreOnly, err := rules.New(cfg.Lint)
 	if err != nil {

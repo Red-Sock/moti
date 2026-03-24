@@ -3,6 +3,7 @@ package lockfile
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"iter"
 	"os"
 	"sort"
@@ -10,12 +11,17 @@ import (
 
 	"go.redsock.ru/rerrors"
 
-	"go.redsock.ru/moti/internal/core"
 	"go.redsock.ru/moti/internal/core/models"
 )
 
+type DirWalker interface {
+	Open(name string) (io.ReadCloser, error)
+	Create(name string) (io.WriteCloser, error)
+	WalkDir(callback func(path string, err error) error) error
+}
+
 const (
-	lockFileName = "protopack.lock"
+	lockFileName = "moti.lock"
 )
 
 type fileInfo struct {
@@ -24,11 +30,20 @@ type fileInfo struct {
 }
 
 type LockFile struct {
-	dirWalker core.DirWalker
+	dirWalker DirWalker
 	cache     map[string]fileInfo
 }
 
-func New(dirWalker core.DirWalker) (*LockFile, error) {
+type ILockFile interface {
+	Read(moduleName string) (models.LockFileInfo, error)
+	Write(
+		moduleName string, revisionVersion string, installedPackageHash models.ModuleHash,
+	) error
+	IsEmpty() bool
+	DepsIter() iter.Seq[models.LockFileInfo]
+}
+
+func New(dirWalker DirWalker) (*LockFile, error) {
 	cache := make(map[string]fileInfo)
 	lockFile := &LockFile{
 		dirWalker: dirWalker,

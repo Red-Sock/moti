@@ -24,6 +24,21 @@ type (
 		rootDir  string
 		lockFile LockFile
 	}
+
+	IStorage interface {
+		CreateCacheRepositoryDir(name string) (string, error)
+		CreateCacheDownloadDir(models.CacheDownloadPaths) error
+		GetCacheDownloadPaths(module models.Module, revision models.Revision) models.CacheDownloadPaths
+		Install(
+			cacheDownloadPaths models.CacheDownloadPaths,
+			module models.Module,
+			revision models.Revision,
+			moduleConfig models.ModuleConfig,
+		) (models.ModuleHash, error)
+		GetInstalledModuleHash(moduleName string, revisionVersion string) (models.ModuleHash, error)
+		IsModuleInstalled(module models.Module) (bool, error)
+		GetInstallDir(moduleName string, revisionVersion string) string
+	}
 )
 
 func New(rootDir string, lockFile LockFile) *Storage {
