@@ -74,8 +74,13 @@ func (q Query) Build() (command string, args []string) {
 		args = append(args, arg)
 	}
 
+	uniqueProtoFileDirs := make(map[string]struct{})
 	for _, file := range q.Files {
-		args = append(args, file)
+		uniqueProtoFileDirs[filepath.Dir(file)] = struct{}{}
+	}
+
+	for file := range uniqueProtoFileDirs {
+		args = append(args, file+"/*.proto")
 	}
 
 	return command, args

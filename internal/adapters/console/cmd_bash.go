@@ -25,7 +25,7 @@ func (bash) RunCmd(ctx context.Context, dir string, command string, commandParam
 	cmd.Stderr = &stderr
 	cmd.Stdout = &stdout
 
-	println("running generate command at " + dir)
+	println("Running command at " + dir)
 	println(command + " " + strings.Join(commandParams, " \\\n           "))
 
 	err := cmd.Run()

@@ -4,7 +4,6 @@ certs
 bin
 moti
 coverage.out
-moti.lock
 .DS_Store
 dist/
 proto_modules
