@@ -15,6 +15,7 @@ import (
 )
 
 func (s *Storage) Install(
+	ctx context.Context,
 	cacheDownloadPaths models.CacheDownloadPaths,
 	module models.Module,
 	revision models.Revision,
@@ -29,7 +30,8 @@ func (s *Storage) Install(
 	version := helpers.SanitizePath(revision.Version)
 	installedDirPath := s.GetInstallDir(module.Name, version)
 
-	if err := os.MkdirAll(installedDirPath, DirPerm); err != nil {
+	err := os.MkdirAll(installedDirPath, DirPerm)
+	if err != nil {
 		return "", fmt.Errorf("os.MkdirAll: %w", err)
 	}
 
@@ -44,7 +46,8 @@ func (s *Storage) Install(
 
 	log.Debug().Str("installedDirPath", installedDirPath).Msg("Starting extract")
 
-	if err := extract.Archive(context.TODO(), openedFile, installedDirPath, renamer); err != nil {
+	err = extract.Archive(ctx, openedFile, installedDirPath, renamer)
+	if err != nil {
 		return "", fmt.Errorf("extract.Archive: %w", err)
 	}
 

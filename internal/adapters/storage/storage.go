@@ -1,6 +1,8 @@
 package storage
 
 import (
+	"context"
+
 	"go.redsock.ru/moti/internal/models"
 )
 
@@ -29,6 +31,7 @@ type IStorage interface {
 	CreateCacheDownloadDir(models.CacheDownloadPaths) error
 	GetCacheDownloadPaths(module models.Module, revision models.Revision) models.CacheDownloadPaths
 	Install(
+		ctx context.Context,
 		cacheDownloadPaths models.CacheDownloadPaths,
 		module models.Module,
 		revision models.Revision,

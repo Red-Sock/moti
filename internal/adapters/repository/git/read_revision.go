@@ -110,12 +110,41 @@ func (r *gitRepo) readRevisionForLatestCommit(ctx context.Context) (revisionPart
 	}
 
 	commitHash := parts[0]
-	version := ""
 
 	// try to get git tag for this commit
+	version, err := r.getTagForCommit(ctx, commitHash)
+	if err != nil {
+		return revisionParts{}, rerrors.Wrap(err, "getTagForCommit")
+	}
+
+	if version != "" {
+		return revisionParts{
+			CommitHash: commitHash,
+			Version:    version,
+		}, nil
+	}
+
+	// get commit's datetime
+	commitDatetime, err := r.getCommitDatetime(ctx, commitHash)
+	if err != nil {
+		return revisionParts{}, rerrors.Wrap(err, "getCommitDatetime")
+	}
+
+	generatedVersion := models.GeneratedVersionParts{
+		Datetime:   commitDatetime,
+		CommitHash: commitHash,
+	}
+
+	return revisionParts{
+		CommitHash: commitHash,
+		Version:    generatedVersion.GetVersionString(),
+	}, nil
+}
+
+func (r *gitRepo) getTagForCommit(ctx context.Context, commitHash string) (string, error) {
 	tagInfo, err := r.console.RunCmd(ctx, r.cacheDir, "git", "ls-remote", "origin")
 	if err != nil {
-		return revisionParts{}, fmt.Errorf("adapters.RunCmd (ls-remote tagInfo): %w", err)
+		return "", fmt.Errorf("adapters.RunCmd (ls-remote tagInfo): %w", err)
 	}
 
 	for _, lsOut := range strings.Split(tagInfo, "\n") {
@@ -129,22 +158,15 @@ func (r *gitRepo) readRevisionForLatestCommit(ctx context.Context) (revisionPart
 		}
 
 		if strings.HasPrefix(rev[1], gitRefsTagPrefix) {
-			version = strings.TrimPrefix(rev[1], gitRefsTagPrefix)
-
-			break
+			return strings.TrimPrefix(rev[1], gitRefsTagPrefix), nil
 		}
 	}
 
-	if version != "" {
-		revParts := revisionParts{
-			CommitHash: commitHash,
-			Version:    version,
-		}
+	return "", nil
+}
 
-		return revParts, nil
-	}
-
-	_, err = r.console.RunCmd(
+func (r *gitRepo) getCommitDatetime(ctx context.Context, commitHash string) (string, error) {
+	_, err := r.console.RunCmd(
 		ctx, r.cacheDir,
 		"git",
 		"fetch", "-f",
@@ -152,10 +174,9 @@ func (r *gitRepo) readRevisionForLatestCommit(ctx context.Context) (revisionPart
 		commitHash,
 	)
 	if err != nil {
-		return revisionParts{}, fmt.Errorf("adapters.RunCmd (fetch): %w", err)
+		return "", fmt.Errorf("adapters.RunCmd (fetch): %w", err)
 	}
 
-	// get commit's datetime
 	commitDatetime, err := r.console.RunCmd(
 		ctx,
 		r.cacheDir,
@@ -165,30 +186,20 @@ func (r *gitRepo) readRevisionForLatestCommit(ctx context.Context) (revisionPart
 		commitHash,
 	)
 	if err != nil {
-		return revisionParts{}, fmt.Errorf("adapters.RunCmd (log): %w", err)
+		return "", fmt.Errorf("adapters.RunCmd (log): %w", err)
 	}
 
-	lines = strings.Split(commitDatetime, "\n")
+	lines := strings.Split(commitDatetime, "\n")
 	if len(lines) == 0 {
-		return revisionParts{}, fmt.Errorf("invalid lines of git log: %s", commitDatetime)
+		return "", fmt.Errorf("invalid lines of git log: %s", commitDatetime)
 	}
 
-	parts = strings.Fields(lines[0])
+	parts := strings.Fields(lines[0])
 	if len(parts) != 1 {
-		return revisionParts{}, fmt.Errorf("invalid parts of git log: %s", commitDatetime)
+		return "", fmt.Errorf("invalid parts of git log: %s", commitDatetime)
 	}
 
-	generatedVersion := models.GeneratedVersionParts{
-		Datetime:   parts[0],
-		CommitHash: commitHash,
-	}
-
-	revParts := revisionParts{
-		CommitHash: commitHash,
-		Version:    generatedVersion.GetVersionString(),
-	}
-
-	return revParts, nil
+	return parts[0], nil
 }
 
 func (r *gitRepo) readRevisionByGeneratedVersion(

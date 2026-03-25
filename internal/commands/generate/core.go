@@ -61,7 +61,7 @@ func (c *Core) Generate(ctx context.Context) error {
 	return nil
 }
 
-func (c *Core) GenerateInputs(q ProtocQuery) (ProtocQuery, error) {
+func (c *Core) GenerateInputs(query ProtocQuery) (ProtocQuery, error) {
 	for _, input := range c.env.MotiConfig.Generate.Inputs {
 		moduleWalkerFunc := func(path string, err error) error {
 			switch {
@@ -71,60 +71,77 @@ func (c *Core) GenerateInputs(q ProtocQuery) (ProtocQuery, error) {
 				return nil
 			}
 
-			q.Files = append(q.Files, filepath.Join(input.Directory, path))
+			query.Files = append(query.Files, filepath.Join(input.Directory, path))
 
 			return nil
 		}
 
-		gitGenerateCb := func(modulePaths string) func(path string, err error) error {
-			return func(path string, err error) error {
-				err = moduleWalkerFunc(path, err)
-				if err != nil {
-					return err
-				}
-
-				q.Imports = append(q.Imports, modulePaths)
-
-				return nil
-			}
-		}
-
 		if input.GitRepo.URL == "" {
-			fsWalker := fs.NewFSWalker(input.Directory, "")
-
-			err := fsWalker.WalkDir(moduleWalkerFunc)
+			err := c.generateFromLocalFS(input, moduleWalkerFunc)
 			if err != nil {
-				return q, rerrors.Wrap(err, "fsWalker.WalkDir")
+				return query, rerrors.Wrap(err, "generateFromLocalFS")
 			}
 
 			continue
 		}
 
-		module := models.NewModule(input.GitRepo.URL)
-
-		isInstalled, err := c.env.Storage.IsModuleInstalled(module)
+		err := c.generateFromGitRepo(&query, input, moduleWalkerFunc)
 		if err != nil {
-			return q, rerrors.Wrap(err, "c.isModuleInstalled")
-		}
-
-		if !isInstalled {
-			return q, rerrors.Wrap(models.ErrModuleNotInstalled, module)
-		}
-
-		modulePaths, err := c.getModulePath(module.Name)
-		if err != nil {
-			return q, rerrors.Wrap(err, "c.getModulePath")
-		}
-
-		fsWalker := fs.NewFSWalker(modulePaths, input.GitRepo.SubDirectory)
-
-		err = fsWalker.WalkDir(gitGenerateCb(modulePaths))
-		if err != nil {
-			return q, rerrors.Wrap(err, "fsWalker.WalkDir1")
+			return query, rerrors.Wrap(err, "generateFromGitRepo")
 		}
 	}
 
-	return q, nil
+	return query, nil
+}
+
+func (c *Core) generateFromLocalFS(input config.Input, walker func(path string, err error) error) error {
+	fsWalker := fs.NewFSWalker(input.Directory, "")
+
+	err := fsWalker.WalkDir(walker)
+	if err != nil {
+		return rerrors.Wrap(err, "fsWalker.WalkDir")
+	}
+
+	return nil
+}
+
+func (c *Core) generateFromGitRepo(query *ProtocQuery, input config.Input,
+	walker func(path string, err error) error) error {
+	module := models.NewModule(input.GitRepo.URL)
+
+	isInstalled, err := c.env.Storage.IsModuleInstalled(module)
+	if err != nil {
+		return rerrors.Wrap(err, "c.isModuleInstalled")
+	}
+
+	if !isInstalled {
+		return rerrors.Wrap(models.ErrModuleNotInstalled, module)
+	}
+
+	modulePaths, err := c.getModulePath(module.Name)
+	if err != nil {
+		return rerrors.Wrap(err, "c.getModulePath")
+	}
+
+	fsWalker := fs.NewFSWalker(modulePaths, input.GitRepo.SubDirectory)
+
+	gitGenerateCb := func(path string, err error) error {
+		err = walker(path, err)
+		if err != nil {
+			return err
+		}
+
+		query.Imports = append(query.Imports, modulePaths)
+
+		return nil
+	}
+
+	err = fsWalker.WalkDir(gitGenerateCb)
+	if err != nil {
+		return rerrors.Wrap(err, "fsWalker.WalkDir")
+	}
+
+	return nil
 }
 
 func (c *Core) getModulePath(requestedDependency string) (string, error) {

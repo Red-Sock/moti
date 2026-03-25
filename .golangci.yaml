@@ -9,7 +9,7 @@ run:
 
 formatters:
   enable:
-#    - gofumpt
+    #    - gofumpt
     - goimports
 
 linters:
@@ -22,6 +22,7 @@ linters:
     - containedctx
     - contextcheck
     - cyclop
+    - funcorder
     - decorder
     - dogsled
     - dupl
@@ -47,6 +48,7 @@ linters:
     - goprintffuncname
     - gosec
     - govet
+    - noinlineerr
     - grouper
     - importas
     - ineffassign
@@ -89,6 +91,7 @@ linters:
   exclusions:
     paths:
       - "internal/rules"
+      - "examples"
 
   settings:
     tagliatelle:
@@ -110,6 +113,10 @@ linters:
         - G107
         # For bash execution
         - G204
+    funcorder:
+      constructor: true
+      struct-method: true
+      alphabetical: false
 
 issues:
   max-issues-per-linter: 10

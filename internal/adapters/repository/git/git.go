@@ -57,12 +57,13 @@ func New(ctx context.Context, remote string, cacheDir string, console Console) (
 		return nil, rerrors.Wrap(err)
 	}
 
-	if _, err := os.Stat(filepath.Join(repo.cacheDir, "objects")); err == nil {
-		// repo is already exists
+	_, err = os.Stat(filepath.Join(repo.cacheDir, "objects"))
+	if err == nil {
 		return repo, nil
 	}
 
-	if _, err := repo.console.RunCmd(ctx, repo.cacheDir, "git", "init", "--bare"); err != nil {
+	_, err = repo.console.RunCmd(ctx, repo.cacheDir, "git", "init", "--bare")
+	if err != nil {
 		return nil, rerrors.Wrap(err, "adapters.RunCmd (init): %w", err)
 	}
 
@@ -107,13 +108,7 @@ func GetRemote(ctx context.Context, remoteURL string) (string, error) {
 
 	nodeWalker = func(node *html.Node) {
 		if node.Type == html.ElementNode && node.Data == "meta" {
-			metaName, content := getMetaNameAndContent(node)
-			if metaName == "go-import" && content != "" {
-				parts := strings.Fields(content)
-				if len(parts) == 3 {
-					remoteURL = parts[2]
-				}
-			}
+			remoteURL = updateRemoteFromMeta(node, remoteURL)
 		}
 
 		for c := node.FirstChild; c != nil; c = c.NextSibling {
@@ -124,6 +119,18 @@ func GetRemote(ctx context.Context, remoteURL string) (string, error) {
 	nodeWalker(doc)
 
 	return remoteURL, nil
+}
+
+func updateRemoteFromMeta(node *html.Node, remoteURL string) string {
+	metaName, content := getMetaNameAndContent(node)
+	if metaName == "go-import" && content != "" {
+		parts := strings.Fields(content)
+		if len(parts) == 3 {
+			return parts[2]
+		}
+	}
+
+	return remoteURL
 }
 
 func getMetaNameAndContent(n *html.Node) (metaName, content string) {

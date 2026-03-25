@@ -7,6 +7,12 @@ import (
 	"go.redsock.ru/rerrors"
 )
 
+type Walker struct {
+	*Adapter
+
+	path string
+}
+
 func NewFSWalker(root, path string) *Walker {
 	if path == "" {
 		path = "."
@@ -18,12 +24,6 @@ func NewFSWalker(root, path string) *Walker {
 		Adapter: &Adapter{diskFS, root},
 		path:    path,
 	}
-}
-
-type Walker struct {
-	*Adapter
-
-	path string
 }
 
 func (w *Walker) WalkDir(callback func(path string, err error) error) error {
