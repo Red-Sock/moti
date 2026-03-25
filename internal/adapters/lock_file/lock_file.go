@@ -33,6 +33,7 @@ type LockFile struct {
 	cache     map[string]fileInfo
 }
 
+//go:generate minimock -i ILockFile -o ../../mocks -g -s "_mock.go"
 type ILockFile interface {
 	Read(moduleName string) (models.LockFileInfo, error)
 	Write(

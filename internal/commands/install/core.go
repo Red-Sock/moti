@@ -15,9 +15,24 @@ import (
 
 type Core struct {
 	commands.Env
+	RepoFactory RepoFactory
+}
+
+//go:generate minimock -i RepoFactory -o ../../mocks -g -s "_mock.go"
+type RepoFactory interface {
+	New(ctx context.Context, remote string, cacheDir string, console git.Console) (repository.Repo, error)
+}
+
+type gitRepoFactory struct{}
+
+func (f *gitRepoFactory) New(ctx context.Context, remote string, cacheDir string, console git.Console) (repository.Repo, error) {
+	return git.New(ctx, remote, cacheDir, console)
 }
 
 func (c *Core) Install(ctx context.Context) error {
+	if c.RepoFactory == nil {
+		c.RepoFactory = &gitRepoFactory{}
+	}
 	for _, dep := range c.MotiConfig.Deps {
 		module := models.NewModule(dep)
 
@@ -91,7 +106,7 @@ func (c *Core) fetchAndReadRevision(ctx context.Context, requestedModule models.
 		return nil, models.Revision{}, rerrors.Wrap(err, "c.storage.CreateCacheRepositoryDir")
 	}
 
-	repo, err := git.New(ctx, requestedModule.Name, cacheRepositoryDir, c.Console)
+	repo, err := c.RepoFactory.New(ctx, requestedModule.Name, cacheRepositoryDir, c.Console)
 	if err != nil {
 		return nil, models.Revision{}, rerrors.Wrap(err, "git.New")
 	}

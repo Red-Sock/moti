@@ -26,6 +26,7 @@ type Storage struct {
 	lockFile LockFile
 }
 
+//go:generate minimock -i IStorage -o ../../mocks -g -s "_mock.go"
 type IStorage interface {
 	CreateCacheRepositoryDir(name string) (string, error)
 	CreateCacheDownloadDir(models.CacheDownloadPaths) error

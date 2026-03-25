@@ -3,3 +3,6 @@ build-bin:
 
 lint:
 	golangci-lint run
+
+gen:
+	go generate ./...

@@ -3,11 +3,14 @@ cache_path: proto_modules
 deps:
   - github.com/googleapis/googleapis
   - go.redsock.ru/protoc-gen-npm@v0.0.17
+#  - github.com/vervstack/Matreshka@v1.0.95
 
 generate:
   proto_root: api/grpc
   inputs:
     - directory: "api/grpc"
+    - git_repo:
+        url: github.com/vervstack/Matreshka@v1.0.95
   plugins:
     - name: go
       out: pkg/api

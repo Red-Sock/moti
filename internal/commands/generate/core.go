@@ -18,28 +18,44 @@ import (
 )
 
 type Core struct {
-	env commands.Env
+	Env    commands.Env
+	Walker IWalker
+}
+
+//go:generate minimock -i IWalker -o ../../mocks -g -s "_mock.go"
+type IWalker interface {
+	WalkDir(root, path string, callback func(path string, err error) error) error
+}
+
+type fsWalker struct{}
+
+func (f *fsWalker) WalkDir(root, path string, callback func(path string, err error) error) error {
+	w := fs.NewFSWalker(root, path)
+	return w.WalkDir(callback)
 }
 
 func (c *Core) Generate(ctx context.Context) error {
+	if c.Walker == nil {
+		c.Walker = &fsWalker{}
+	}
 	query := ProtocQuery{
 		Imports: []string{
-			toolbox.Coalesce(c.env.MotiConfig.Generate.ProtoRoot, "."),
+			toolbox.Coalesce(c.Env.MotiConfig.Generate.ProtoRoot, "."),
 		},
-		Plugins: c.env.MotiConfig.Generate.Plugins,
+		Plugins: c.Env.MotiConfig.Generate.Plugins,
 	}
 
-	err := mkdirForPluginsOut(c.env.MotiConfig.Generate.Plugins)
+	err := mkdirForPluginsOut(c.Env.MotiConfig.Generate.Plugins)
 	if err != nil {
 		return rerrors.Wrap(err, "mkdir for plugins failed")
 	}
 
-	for _, dep := range c.env.MotiConfig.Deps {
+	for _, dep := range c.Env.MotiConfig.Deps {
 		modulePaths, err := c.getModulePath(dep)
 		if err != nil {
 			return rerrors.Wrap(err, "c.getModulePath")
 		}
-
+		
 		query.Imports = append(query.Imports, modulePaths)
 	}
 
@@ -53,7 +69,7 @@ func (c *Core) Generate(ctx context.Context) error {
 	log.Info().
 		Msg(command + " " + strings.Join(args, " \\\n           "))
 
-	_, err = c.env.Console.RunCmd(ctx, c.env.WorkDir, command, args...)
+	_, err = c.Env.Console.RunCmd(ctx, c.Env.WorkDir, command, args...)
 	if err != nil {
 		return rerrors.Wrap(err, "adapters.RunCmd")
 	}
@@ -62,22 +78,9 @@ func (c *Core) Generate(ctx context.Context) error {
 }
 
 func (c *Core) GenerateInputs(query ProtocQuery) (ProtocQuery, error) {
-	for _, input := range c.env.MotiConfig.Generate.Inputs {
-		moduleWalkerFunc := func(path string, err error) error {
-			switch {
-			case err != nil:
-				return err
-			case filepath.Ext(path) != ".proto":
-				return nil
-			}
-
-			query.Files = append(query.Files, filepath.Join(input.Directory, path))
-
-			return nil
-		}
-
+	for _, input := range c.Env.MotiConfig.Generate.Inputs {
 		if input.GitRepo.URL == "" {
-			err := c.generateFromLocalFS(input, moduleWalkerFunc)
+			err := c.generateFromLocalFS(&query, input)
 			if err != nil {
 				return query, rerrors.Wrap(err, "generateFromLocalFS")
 			}
@@ -85,7 +88,7 @@ func (c *Core) GenerateInputs(query ProtocQuery) (ProtocQuery, error) {
 			continue
 		}
 
-		err := c.generateFromGitRepo(&query, input, moduleWalkerFunc)
+		err := c.generateFromGitRepo(&query, input)
 		if err != nil {
 			return query, rerrors.Wrap(err, "generateFromGitRepo")
 		}
@@ -94,22 +97,32 @@ func (c *Core) GenerateInputs(query ProtocQuery) (ProtocQuery, error) {
 	return query, nil
 }
 
-func (c *Core) generateFromLocalFS(input config.Input, walker func(path string, err error) error) error {
-	fsWalker := fs.NewFSWalker(input.Directory, "")
+func (c *Core) generateFromLocalFS(query *ProtocQuery, input config.Input) error {
+	walker := func(path string, err error) error {
+		isProto, err := isContainingProto(path, err)
+		if err != nil {
+			return rerrors.Wrap(err, "isContainingProto")
+		}
 
-	err := fsWalker.WalkDir(walker)
+		if isProto {
+			query.Files = append(query.Files, filepath.Join(input.Directory, path))
+		}
+
+		return nil
+	}
+
+	err := c.Walker.WalkDir(input.Directory, "", walker)
 	if err != nil {
-		return rerrors.Wrap(err, "fsWalker.WalkDir")
+		return rerrors.Wrap(err, "Walker.WalkDir")
 	}
 
 	return nil
 }
 
-func (c *Core) generateFromGitRepo(query *ProtocQuery, input config.Input,
-	walker func(path string, err error) error) error {
+func (c *Core) generateFromGitRepo(query *ProtocQuery, input config.Input) error {
 	module := models.NewModule(input.GitRepo.URL)
 
-	isInstalled, err := c.env.Storage.IsModuleInstalled(module)
+	isInstalled, err := c.Env.Storage.IsModuleInstalled(module)
 	if err != nil {
 		return rerrors.Wrap(err, "c.isModuleInstalled")
 	}
@@ -123,22 +136,25 @@ func (c *Core) generateFromGitRepo(query *ProtocQuery, input config.Input,
 		return rerrors.Wrap(err, "c.getModulePath")
 	}
 
-	fsWalker := fs.NewFSWalker(modulePaths, input.GitRepo.SubDirectory)
-
 	gitGenerateCb := func(path string, err error) error {
-		err = walker(path, err)
+		containsProto, err := isContainingProto(path, err)
 		if err != nil {
 			return err
 		}
 
-		query.Imports = append(query.Imports, modulePaths)
+		if containsProto {
+			moduleProtoPath := filepath.Join(modulePaths, path)
+
+			query.Files = append(query.Files, moduleProtoPath)
+			query.Imports = append(query.Imports, filepath.Dir(moduleProtoPath))
+		}
 
 		return nil
 	}
 
-	err = fsWalker.WalkDir(gitGenerateCb)
+	err = c.Walker.WalkDir(modulePaths, input.GitRepo.SubDirectory, gitGenerateCb)
 	if err != nil {
-		return rerrors.Wrap(err, "fsWalker.WalkDir")
+		return rerrors.Wrap(err, "Walker.WalkDir")
 	}
 
 	return nil
@@ -147,7 +163,7 @@ func (c *Core) generateFromGitRepo(query *ProtocQuery, input config.Input,
 func (c *Core) getModulePath(requestedDependency string) (string, error) {
 	module := models.NewModule(requestedDependency)
 
-	isInstalled, err := c.env.Storage.IsModuleInstalled(module)
+	isInstalled, err := c.Env.Storage.IsModuleInstalled(module)
 	if err != nil {
 		return "", rerrors.Wrap(err, "h.storage.IsModuleInstalled")
 	}
@@ -156,12 +172,12 @@ func (c *Core) getModulePath(requestedDependency string) (string, error) {
 		return "", rerrors.Wrap(models.ErrModuleNotInstalled, module.Name)
 	}
 
-	lockFileInfo, err := c.env.LockFile.Read(module.Name)
+	lockFileInfo, err := c.Env.LockFile.Read(module.Name)
 	if err != nil {
 		return "", rerrors.Wrap(err, "lockFile.Read")
 	}
 
-	return c.env.Storage.GetInstallDir(module.Name, lockFileInfo.Version), nil
+	return c.Env.Storage.GetInstallDir(module.Name, lockFileInfo.Version), nil
 }
 
 func toUniqueMap(imports []string) map[string]struct{} {
@@ -191,4 +207,15 @@ func mkdirForPluginsOut(plugins []config.Plugin) error {
 	}
 
 	return nil
+}
+
+func isContainingProto(path string, err error) (bool, error) {
+	switch {
+	case err != nil:
+		return false, err
+	case filepath.Ext(path) != ".proto":
+		return false, nil
+	}
+
+	return true, nil
 }

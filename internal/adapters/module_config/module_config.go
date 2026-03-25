@@ -12,6 +12,7 @@ import (
 type ModuleConfig struct {
 }
 
+//go:generate minimock -i IModuleConfig -o ../../mocks -g -s "_mock.go"
 type IModuleConfig interface {
 	ReadFromRepo(ctx context.Context, repo repository.Repo, revision models.Revision) (models.ModuleConfig, error)
 }

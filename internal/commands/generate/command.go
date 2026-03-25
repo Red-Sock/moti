@@ -38,7 +38,7 @@ func (c Command) Action(cmd *cobra.Command, args []string) error {
 
 func (c Command) Do(cmd *cobra.Command, _ []string) error {
 	app := Core{
-		env: commands.GetProductionEnvironmentOrDie(cmd),
+		Env: commands.GetProductionEnvironmentOrDie(cmd),
 	}
 
 	err := app.Generate(cmd.Context())

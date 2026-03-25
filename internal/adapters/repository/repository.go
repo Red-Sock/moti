@@ -6,6 +6,7 @@ import (
 	"go.redsock.ru/moti/internal/models"
 )
 
+//go:generate minimock -i Repo -o ../../mocks -g -s "_mock.go"
 type Repo interface {
 	// GetFiles returns list of all files in repository
 	GetFiles(ctx context.Context, revision models.Revision, dirs ...string) ([]string, error)
