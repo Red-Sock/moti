@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/rs/zerolog/log"
+	"go.redsock.ru/rerrors"
 
 	"go.redsock.ru/moti/internal/adapters/repository/git"
 	"go.redsock.ru/moti/internal/commands"
@@ -72,7 +73,9 @@ func (c *Core) InstallPackage(ctx context.Context, requestedModule models.Module
 		err = c.InstallPackage(ctx, indirectDep)
 		if err != nil {
 			if errors.Is(err, models.ErrVersionNotFound) {
-				log.Error().Interface("dependency", indirectDep).Msg("Version not found")
+				log.Error().
+					Interface("dependency", indirectDep).
+					Msg("Version not found")
 				return models.ErrVersionNotFound
 			}
 
@@ -90,11 +93,13 @@ func (c *Core) InstallPackage(ctx context.Context, requestedModule models.Module
 		return fmt.Errorf("c.storage.Install: %w", err)
 	}
 
-	log.Debug().Str("hash", string(moduleHash)).Msg("HASH")
+	log.Debug().
+		Str("hash", string(moduleHash)).
+		Msg("Hash for module")
 
 	err = c.LockFile.Write(requestedModule.Name, revision.Version, moduleHash)
 	if err != nil {
-		return fmt.Errorf("c.lockFile.Write: %w", err)
+		return rerrors.Wrap(err, "c.lockFile.Write")
 	}
 
 	return nil
