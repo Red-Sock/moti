@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"context"
 	"os/exec"
+	"strings"
 )
 
 type bash struct{}
@@ -18,10 +19,14 @@ func (bash) RunCmd(ctx context.Context, dir string, command string, commandParam
 	var stderr bytes.Buffer
 	var stdout bytes.Buffer
 
-	cmd := exec.CommandContext(ctx, command, commandParams...)
+	fullCommand := append([]string{command}, commandParams...)
+	cmd := exec.CommandContext(ctx, "bash", "-c", strings.Join(fullCommand, " "))
 	cmd.Dir = dir
 	cmd.Stderr = &stderr
 	cmd.Stdout = &stdout
+
+	println("running generate command at " + dir)
+	println(command + " " + strings.Join(commandParams, " \\\n           "))
 
 	err := cmd.Run()
 	if err != nil {

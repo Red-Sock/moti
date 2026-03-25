@@ -1,9 +1,6 @@
 package main
 
 import (
-	"os"
-
-	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 
@@ -15,9 +12,6 @@ import (
 )
 
 func main() {
-	zerolog.SetGlobalLevel(zerolog.InfoLevel)
-	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
-
 	rootCmd := &cobra.Command{
 		Use:     "moti",
 		Short:   "moti - usage info",

@@ -11,12 +11,12 @@ import (
 
 	"github.com/rs/zerolog"
 	"go.redsock.ru/rerrors"
-	"go.redsock.ru/toolbox"
 
 	"go.redsock.ru/moti/internal/adapters/console"
 	lockfile "go.redsock.ru/moti/internal/adapters/lock_file"
 	moduleconfig "go.redsock.ru/moti/internal/adapters/module_config"
 	"go.redsock.ru/moti/internal/adapters/storage"
+	"go.redsock.ru/moti/internal/commands"
 	"go.redsock.ru/moti/internal/core/models"
 	"go.redsock.ru/moti/internal/fs/fs"
 )
@@ -117,14 +117,16 @@ func (q Query) getUniqueImports() map[string]struct{} {
 		uniqueImports[imp] = struct{}{}
 	}
 
-	for _, file := range q.Files {
-		uniqueImports[filepath.Dir(file)] = struct{}{}
-	}
+	//for _, file := range q.Files {
+	//	uniqueImports[filepath.Dir(file)] = struct{}{}
+	//}
 
 	return uniqueImports
 }
 
 type Core struct {
+	env commands.Env
+
 	deps         []string
 	logger       *zerolog.Logger
 	plugins      []Plugin
@@ -160,17 +162,17 @@ func New(
 	}
 }
 
-func (c *Core) Generate(ctx context.Context, root string, directories ...string) error {
+func (c *Core) Generate(ctx context.Context) error {
 	q := Query{
 		Compiler: "protoc",
 		Imports: []string{
-			toolbox.Coalesce(c.protoRoot, root),
+			c.protoRoot,
 		},
 		Plugins: c.plugins,
 	}
 
 	for _, dep := range c.deps {
-		modulePaths, err := c.getModulePath(ctx, dep)
+		modulePaths, err := c.getModulePath(dep)
 		if err != nil {
 			return rerrors.Wrap(err, "c.getModulePath")
 		}
@@ -216,7 +218,7 @@ func (c *Core) Generate(ctx context.Context, root string, directories ...string)
 		}
 
 		if isInstalled {
-			modulePaths, err := c.getModulePath(ctx, module.Name)
+			modulePaths, err := c.getModulePath(module.Name)
 			if err != nil {
 				return rerrors.Wrap(err, "c.getModulePath")
 			}
@@ -235,11 +237,7 @@ func (c *Core) Generate(ctx context.Context, root string, directories ...string)
 	}
 
 	for _, inp := range c.inputs.Dirs {
-
-	}
-
-	for _, directory := range directories {
-		fsWalker := fs.NewFSWalker(directory, "")
+		fsWalker := fs.NewFSWalker(inp, "")
 		err := fsWalker.WalkDir(func(path string, err error) error {
 			switch {
 			case err != nil:
@@ -248,13 +246,10 @@ func (c *Core) Generate(ctx context.Context, root string, directories ...string)
 				return ctx.Err()
 			case filepath.Ext(path) != ".proto":
 				return nil
-			case shouldIgnore(path, c.inputs.Dirs):
-				c.logger.Debug().Str("path", path).Msg("ignore")
-
-				return nil
 			}
 
-			q.Files = append(q.Files, filepath.Join(directory, path))
+			q.Files = append(q.Files, filepath.Join(inp, path))
+			//q.Imports = append(q.Imports, inp)
 
 			return nil
 		})
@@ -265,12 +260,7 @@ func (c *Core) Generate(ctx context.Context, root string, directories ...string)
 
 	command, args := q.Build()
 
-	c.logger.Info().
-		Str("command", command).
-		Strs("args", args).
-		Msg("Run command")
-
-	_, err := c.console.RunCmd(ctx, root, command, args...)
+	_, err := c.console.RunCmd(ctx, c.env.WorkDir, command, args...)
 	if err != nil {
 		return rerrors.Wrap(err, "adapters.RunCmd")
 	}
@@ -278,7 +268,7 @@ func (c *Core) Generate(ctx context.Context, root string, directories ...string)
 	return nil
 }
 
-func (c *Core) getModulePath(_ context.Context, requestedDependency string) (string, error) {
+func (c *Core) getModulePath(requestedDependency string) (string, error) {
 	module := models.NewModule(requestedDependency)
 
 	isInstalled, err := c.storage.IsModuleInstalled(module)
@@ -287,7 +277,7 @@ func (c *Core) getModulePath(_ context.Context, requestedDependency string) (str
 	}
 
 	if !isInstalled {
-		return "", fmt.Errorf("module %s is not installed. Please run `moti install` first", module.Name)
+		return "", rerrors.Wrap(err, "module %s is not installed. Please run `moti install` first", module.Name)
 	}
 
 	lockFileInfo, err := c.lockFile.Read(module.Name)
@@ -298,18 +288,4 @@ func (c *Core) getModulePath(_ context.Context, requestedDependency string) (str
 	installedPath := c.storage.GetInstallDir(module.Name, lockFileInfo.Version)
 
 	return installedPath, nil
-}
-
-func shouldIgnore(path string, dirs []string) bool {
-	if len(dirs) == 0 {
-		return false
-	}
-
-	for _, dir := range dirs {
-		if strings.HasPrefix(path, dir) {
-			return false
-		}
-	}
-
-	return true
 }

@@ -2,10 +2,16 @@ syntax = "proto3";
 
 package basic_example_api;
 
-option go_package = "go.redsock.ru/moti/examples/simple;basic_example_api";
+option go_package = "go.redsock.ru/moti/examples/basic_example_api;basic_example_api";
+
+import "google/api/annotations.proto";
 
 service BasicExampleApi {
-  rpc Hello(Hello.Request) returns (Hello.Response) {}
+  rpc Hello(Hello.Request) returns (Hello.Response) {
+    option (google.api.http) = {
+      get: "/api/hello"
+    };
+  }
 }
 
 message Hello {

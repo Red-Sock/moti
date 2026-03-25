@@ -7,6 +7,7 @@ import (
 	"github.com/samber/lo"
 	"github.com/spf13/cobra"
 	"go.redsock.ru/rerrors"
+	"go.redsock.ru/toolbox"
 
 	"go.redsock.ru/moti/internal/adapters/console"
 	lockfile "go.redsock.ru/moti/internal/adapters/lock_file"
@@ -33,7 +34,16 @@ func (c Command) Command() *cobra.Command {
 	return cmd
 }
 
-func (c Command) Action(cmd *cobra.Command, _ []string) error {
+func (c Command) Action(cmd *cobra.Command, args []string) error {
+	err := c.do(cmd, args)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to generate")
+	}
+
+	return nil
+}
+
+func (c Command) do(cmd *cobra.Command, _ []string) error {
 	motiEnvironment, err := commands.GetEnvironment(cmd)
 	if err != nil {
 		return rerrors.Wrap(err)
@@ -41,12 +51,12 @@ func (c Command) Action(cmd *cobra.Command, _ []string) error {
 
 	dirWalker := fs.NewFSWalker(motiEnvironment.WorkDir, ".")
 
-	app, err := buildCore(motiEnvironment.MotiConfig, dirWalker)
+	app, err := buildCore(motiEnvironment, dirWalker)
 	if err != nil {
 		return fmt.Errorf("buildCore: %w", err)
 	}
 
-	err = app.Generate(cmd.Context(), ".")
+	err = app.Generate(cmd.Context())
 	if err != nil {
 		return fmt.Errorf("generator.Generate: %w", err)
 	}
@@ -54,19 +64,19 @@ func (c Command) Action(cmd *cobra.Command, _ []string) error {
 	return nil
 }
 
-func buildCore(cfg config.Config, dirWalker lockfile.DirWalker) (*Core, error) {
+func buildCore(motiEnv commands.Env, dirWalker lockfile.DirWalker) (*Core, error) {
 	lockFile, err := lockfile.New(dirWalker)
 	if err != nil {
 		return nil, rerrors.Wrap(err, "error opening lockfile")
 	}
 
-	store := storage.New(cfg.CachePath, lockFile)
+	store := storage.New(motiEnv.MotiConfig.CachePath, lockFile)
 	moduleCfg := moduleconfig.New()
 
 	app := New(
-		cfg.Deps,
+		motiEnv.MotiConfig.Deps,
 		&log.Logger,
-		lo.Map(cfg.Generate.Plugins, func(p config.Plugin, _ int) Plugin {
+		lo.Map(motiEnv.MotiConfig.Generate.Plugins, func(p config.Plugin, _ int) Plugin {
 			return Plugin{
 				Name:    p.Name,
 				Out:     p.Out,
@@ -74,12 +84,12 @@ func buildCore(cfg config.Config, dirWalker lockfile.DirWalker) (*Core, error) {
 			}
 		}),
 		Inputs{
-			Dirs: lo.Filter(lo.Map(cfg.Generate.Inputs, func(i config.Input, _ int) string {
+			Dirs: lo.Filter(lo.Map(motiEnv.MotiConfig.Generate.Inputs, func(i config.Input, _ int) string {
 				return i.Directory
 			}), func(s string, _ int) bool {
 				return s != ""
 			}),
-			InputGitRepos: lo.Filter(lo.Map(cfg.Generate.Inputs, func(i config.Input, _ int) InputGitRepo {
+			InputGitRepos: lo.Filter(lo.Map(motiEnv.MotiConfig.Generate.Inputs, func(i config.Input, _ int) InputGitRepo {
 				return InputGitRepo{
 					URL:          i.GitRepo.URL,
 					SubDirectory: i.GitRepo.SubDirectory,
@@ -93,8 +103,10 @@ func buildCore(cfg config.Config, dirWalker lockfile.DirWalker) (*Core, error) {
 		store,
 		moduleCfg,
 		lockFile,
-		cfg.Generate.ProtoRoot,
+		toolbox.Coalesce(motiEnv.MotiConfig.Generate.ProtoRoot, "."),
 	)
+
+	app.env = motiEnv
 
 	return app, nil
 }
