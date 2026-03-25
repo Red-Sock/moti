@@ -14,16 +14,16 @@ generate:
   plugins:
     - name: go
       out: pkg/api
-      opts:
-        paths: source_relative
+#      opts:
+#        paths: source_relative
     - name: go-grpc
       out: pkg/api
-      opts:
-        paths: source_relative
+#      opts:
+#        paths: source_relative
     - name: grpc-gateway
       out: pkg/api
-      opts:
-        paths: source_relative
+#      opts:
+#        paths: source_relative
 
     - name: grpc-gateway-ts
       out: pkg/web/@vervstack/matreshka
