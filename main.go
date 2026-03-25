@@ -1,6 +1,9 @@
 package main
 
 import (
+	"os"
+
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 
@@ -12,6 +15,8 @@ import (
 )
 
 func main() {
+	log.Logger = zerolog.New(zerolog.ConsoleWriter{Out: os.Stdout}).With().Timestamp().Logger()
+
 	rootCmd := &cobra.Command{
 		Use:     "moti",
 		Short:   "moti - usage info",

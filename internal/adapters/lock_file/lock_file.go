@@ -9,9 +9,11 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/rs/zerolog/log"
 	"go.redsock.ru/rerrors"
 
 	"go.redsock.ru/moti/internal/core/models"
+	"go.redsock.ru/moti/internal/fs/fs"
 )
 
 type DirWalker interface {
@@ -75,6 +77,18 @@ func New(dirWalker DirWalker) (*LockFile, error) {
 	}
 
 	return lockFile, nil
+}
+
+func NewOrDie(workdir string) *LockFile {
+	dirWalker := fs.NewFSWalker(workdir, ".")
+	lock, err := New(dirWalker)
+	if err != nil {
+		log.Fatal().
+			Err(err).
+			Msg("could not create lock file")
+	}
+
+	return lock
 }
 
 // Read information about module by its name from lock file

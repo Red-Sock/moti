@@ -22,8 +22,8 @@ type motiConfig struct {
 	Deps []string `json:"deps" yaml:"deps"`
 }
 
-// readmoti read moti's config from repository
-func readmoti(ctx context.Context, repo repository.Repo, revision models.Revision) ([]models.Module, error) {
+// readMoti read moti's config from repository
+func readMoti(ctx context.Context, repo repository.Repo, revision models.Revision) ([]models.Module, error) {
 	content, err := repo.ReadFile(ctx, revision, default_consts.DefaultConfigFileName)
 	if err != nil {
 		if errors.Is(err, models.ErrFileNotFound) {

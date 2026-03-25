@@ -20,13 +20,11 @@ func (bash) RunCmd(ctx context.Context, dir string, command string, commandParam
 	var stdout bytes.Buffer
 
 	fullCommand := append([]string{command}, commandParams...)
+	
 	cmd := exec.CommandContext(ctx, "bash", "-c", strings.Join(fullCommand, " "))
 	cmd.Dir = dir
 	cmd.Stderr = &stderr
 	cmd.Stdout = &stdout
-
-	println("Running command at " + dir)
-	println(command + " " + strings.Join(commandParams, " \\\n           "))
 
 	err := cmd.Run()
 	if err != nil {

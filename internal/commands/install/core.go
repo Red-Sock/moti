@@ -5,43 +5,19 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
-	"go.redsock.ru/moti/internal/adapters/console"
-	lockfile "go.redsock.ru/moti/internal/adapters/lock_file"
-	moduleconfig "go.redsock.ru/moti/internal/adapters/module_config"
 	"go.redsock.ru/moti/internal/adapters/repository/git"
-	"go.redsock.ru/moti/internal/adapters/storage"
+	"go.redsock.ru/moti/internal/commands"
 	"go.redsock.ru/moti/internal/core/models"
 )
 
 type Core struct {
-	logger       *zerolog.Logger
-	console      console.Console
-	storage      storage.IStorage
-	moduleConfig moduleconfig.IModuleConfig
-	lockFile     lockfile.ILockFile
+	commands.Env
 }
 
-func New(
-	logger *zerolog.Logger,
-	console console.Console,
-	storage storage.IStorage,
-	moduleConfig moduleconfig.IModuleConfig,
-	lockFile lockfile.ILockFile,
-) *Core {
-	return &Core{
-		logger:       logger,
-		console:      console,
-		storage:      storage,
-		moduleConfig: moduleConfig,
-		lockFile:     lockFile,
-	}
-}
-
-func (c *Core) Install(ctx context.Context, deps []string) error {
-	for _, dep := range deps {
+func (c *Core) Install(ctx context.Context) error {
+	for _, dep := range c.MotiConfig.Deps {
 		module := models.NewModule(dep)
 		err := c.InstallPackage(ctx, module)
 		if err != nil {
@@ -52,7 +28,7 @@ func (c *Core) Install(ctx context.Context, deps []string) error {
 }
 
 func (c *Core) InstallPackage(ctx context.Context, requestedModule models.Module) error {
-	isInstalled, err := c.storage.IsModuleInstalled(requestedModule)
+	isInstalled, err := c.Storage.IsModuleInstalled(requestedModule)
 	if err != nil {
 		return fmt.Errorf("c.storage.IsModuleInstalled: %w", err)
 	}
@@ -60,12 +36,12 @@ func (c *Core) InstallPackage(ctx context.Context, requestedModule models.Module
 		return nil
 	}
 
-	cacheRepositoryDir, err := c.storage.CreateCacheRepositoryDir(requestedModule.Name)
+	cacheRepositoryDir, err := c.Storage.CreateCacheRepositoryDir(requestedModule.Name)
 	if err != nil {
 		return fmt.Errorf("c.storage.CreateCacheRepositoryDir: %w", err)
 	}
 
-	repo, err := git.New(ctx, requestedModule.Name, cacheRepositoryDir, c.console)
+	repo, err := git.New(ctx, requestedModule.Name, cacheRepositoryDir, c.Console)
 	if err != nil {
 		return fmt.Errorf("git.New: %w", err)
 	}
@@ -75,9 +51,9 @@ func (c *Core) InstallPackage(ctx context.Context, requestedModule models.Module
 		return fmt.Errorf("repository.ReadRevision: %w", err)
 	}
 
-	cacheDownloadPaths := c.storage.GetCacheDownloadPaths(requestedModule, revision)
+	cacheDownloadPaths := c.Storage.GetCacheDownloadPaths(requestedModule, revision)
 
-	err = c.storage.CreateCacheDownloadDir(cacheDownloadPaths)
+	err = c.Storage.CreateCacheDownloadDir(cacheDownloadPaths)
 	if err != nil {
 		return fmt.Errorf("c.storage.CreateCacheDownloadDir: %w", err)
 	}
@@ -87,7 +63,7 @@ func (c *Core) InstallPackage(ctx context.Context, requestedModule models.Module
 		return fmt.Errorf("repository.Fetch: %w", err)
 	}
 
-	moduleConfig, err := c.moduleConfig.ReadFromRepo(ctx, repo, revision)
+	moduleConfig, err := c.ModuleConfig.ReadFromRepo(ctx, repo, revision)
 	if err != nil {
 		return fmt.Errorf("c.moduleConfig.Read: %w", err)
 	}
@@ -109,14 +85,14 @@ func (c *Core) InstallPackage(ctx context.Context, requestedModule models.Module
 		return fmt.Errorf("repository.Archive: %w", err)
 	}
 
-	moduleHash, err := c.storage.Install(cacheDownloadPaths, requestedModule, revision, moduleConfig)
+	moduleHash, err := c.Storage.Install(cacheDownloadPaths, requestedModule, revision, moduleConfig)
 	if err != nil {
 		return fmt.Errorf("c.storage.Install: %w", err)
 	}
 
 	log.Debug().Str("hash", string(moduleHash)).Msg("HASH")
 
-	err = c.lockFile.Write(requestedModule.Name, revision.Version, moduleHash)
+	err = c.LockFile.Write(requestedModule.Name, revision.Version, moduleHash)
 	if err != nil {
 		return fmt.Errorf("c.lockFile.Write: %w", err)
 	}

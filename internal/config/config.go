@@ -5,8 +5,11 @@ import (
 	"os"
 
 	"github.com/rs/zerolog/log"
+	"github.com/spf13/cobra"
 	"go.redsock.ru/rerrors"
 	"gopkg.in/yaml.v3"
+
+	"go.redsock.ru/moti/internal/flags"
 )
 
 type Config struct {
@@ -46,4 +49,18 @@ func Read(filepath string) (Config, error) {
 	}
 
 	return cfg, nil
+}
+
+func ReadOrDie(cmd *cobra.Command) Config {
+	configPath, _ := cmd.Flags().GetString(flags.Config)
+
+	c, err := Read(configPath)
+	if err != nil {
+		log.Fatal().
+			Err(err).
+			Str("filepath", configPath).
+			Msg("error reading config file")
+	}
+
+	return c
 }

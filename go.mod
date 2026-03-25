@@ -3,6 +3,7 @@ module go.redsock.ru/moti
 go 1.24.0
 
 require (
+	github.com/Red-Sock/go-swagger-ui v0.0.2
 	github.com/brianvoe/gofakeit/v6 v6.28.0
 	github.com/codeclysm/extract/v3 v3.1.1
 	github.com/go-git/go-git/v5 v5.13.1
