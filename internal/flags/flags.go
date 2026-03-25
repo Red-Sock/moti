@@ -1,12 +1,8 @@
 package flags
 
 const (
-	// Max file size is 1mb.
 	DefaultConfigFilePath = "moti.yaml"
-)
+	LockFileName          = "moti.lock"
 
-// Flags names.
-const (
-	Config    = "cfg"
-	DebugMode = "debug"
+	ConfigFlag = "cfg"
 )

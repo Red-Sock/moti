@@ -6,7 +6,7 @@ import (
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/stretchr/testify/require"
 
-	"go.redsock.ru/moti/internal/core/models"
+	"go.redsock.ru/moti/internal/models"
 )
 
 func Test_isVersionsMatched(t *testing.T) {

@@ -2,26 +2,31 @@ package git
 
 import (
 	"context"
-	"fmt"
 	"path/filepath"
 
-	"go.redsock.ru/moti/internal/core/models"
+	"go.redsock.ru/rerrors"
+
+	"go.redsock.ru/moti/internal/models"
 )
 
 func (r *gitRepo) Archive(
-	ctx context.Context, revision models.Revision, cacheDownloadPaths models.CacheDownloadPaths,
-) error {
+	ctx context.Context, revision models.Revision, cacheDownloadPaths models.CacheDownloadPaths) error {
 	absPath, err := filepath.Abs(cacheDownloadPaths.ArchiveFile)
 	if err != nil {
-		return fmt.Errorf("filepath.Abs: %w", err)
+		return rerrors.Wrap(err, "filepath.Abs")
 	}
 
 	params := []string{
-		"archive", "--format=zip", revision.CommitHash, "-o", absPath, "*.proto",
+		"archive",
+		"--format=zip",
+		revision.CommitHash,
+		"-o", absPath,
+		"*.proto",
 	}
 
-	if _, err := r.console.RunCmd(ctx, r.cacheDir, "git", params...); err != nil {
-		return fmt.Errorf("utils.RunCmd: %w", err)
+	_, err = r.console.RunCmd(ctx, r.cacheDir, "git", params...)
+	if err != nil {
+		return rerrors.Wrap(err, "utils.RunCmd")
 	}
 
 	return nil

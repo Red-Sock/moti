@@ -43,6 +43,7 @@ func Read(filepath string) (Config, error) {
 	}
 
 	cfg := Config{}
+
 	err = yaml.Unmarshal(buf, &cfg)
 	if err != nil {
 		return Config{}, rerrors.Wrap(err, "error parsing config file from yaml")
@@ -52,9 +53,9 @@ func Read(filepath string) (Config, error) {
 }
 
 func ReadOrDie(cmd *cobra.Command) Config {
-	configPath, _ := cmd.Flags().GetString(flags.Config)
+	configPath, _ := cmd.Flags().GetString(flags.ConfigFlag)
 
-	c, err := Read(configPath)
+	cfg, err := Read(configPath)
 	if err != nil {
 		log.Fatal().
 			Err(err).
@@ -62,5 +63,5 @@ func ReadOrDie(cmd *cobra.Command) Config {
 			Msg("error reading config file")
 	}
 
-	return c
+	return cfg
 }

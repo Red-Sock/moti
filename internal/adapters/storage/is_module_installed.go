@@ -3,9 +3,10 @@ package storage
 import (
 	"errors"
 	"fmt"
+
 	"github.com/rs/zerolog/log"
 
-	"go.redsock.ru/moti/internal/core/models"
+	"go.redsock.ru/moti/internal/models"
 )
 
 func (s *Storage) IsModuleInstalled(module models.Module) (bool, error) {

@@ -1,10 +1,11 @@
 package storage
 
 import (
-	"go.redsock.ru/moti/internal/core/models"
+	"go.redsock.ru/moti/internal/models"
 )
 
 const (
+	DirPerm = 0755
 	// root cache dir
 	cacheDir = "cache"
 	// dir for downloaded (check sum, archive)
@@ -13,33 +14,30 @@ const (
 	installedDir = "mod"
 )
 
-type (
-	// LockFile should implement adapter for lock file workflow
-	LockFile interface {
-		Read(moduleName string) (models.LockFileInfo, error)
-	}
+type LockFile interface {
+	Read(moduleName string) (models.LockFileInfo, error)
+}
 
-	// Storage implements workflows with directories
-	Storage struct {
-		rootDir  string
-		lockFile LockFile
-	}
+// Storage implements workflows with directories
+type Storage struct {
+	rootDir  string
+	lockFile LockFile
+}
 
-	IStorage interface {
-		CreateCacheRepositoryDir(name string) (string, error)
-		CreateCacheDownloadDir(models.CacheDownloadPaths) error
-		GetCacheDownloadPaths(module models.Module, revision models.Revision) models.CacheDownloadPaths
-		Install(
-			cacheDownloadPaths models.CacheDownloadPaths,
-			module models.Module,
-			revision models.Revision,
-			moduleConfig models.ModuleConfig,
-		) (models.ModuleHash, error)
-		GetInstalledModuleHash(moduleName string, revisionVersion string) (models.ModuleHash, error)
-		IsModuleInstalled(module models.Module) (bool, error)
-		GetInstallDir(moduleName string, revisionVersion string) string
-	}
-)
+type IStorage interface {
+	CreateCacheRepositoryDir(name string) (string, error)
+	CreateCacheDownloadDir(models.CacheDownloadPaths) error
+	GetCacheDownloadPaths(module models.Module, revision models.Revision) models.CacheDownloadPaths
+	Install(
+		cacheDownloadPaths models.CacheDownloadPaths,
+		module models.Module,
+		revision models.Revision,
+		moduleConfig models.ModuleConfig,
+	) (models.ModuleHash, error)
+	GetInstalledModuleHash(moduleName string, revisionVersion string) (models.ModuleHash, error)
+	IsModuleInstalled(module models.Module) (bool, error)
+	GetInstallDir(moduleName string, revisionVersion string) string
+}
 
 func New(rootDir string, lockFile LockFile) *Storage {
 	return &Storage{
@@ -47,7 +45,3 @@ func New(rootDir string, lockFile LockFile) *Storage {
 		lockFile: lockFile,
 	}
 }
-
-const (
-	dirPerm = 0755
-)

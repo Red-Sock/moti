@@ -3,10 +3,12 @@ package git
 import (
 	"context"
 	"fmt"
-	"github.com/rs/zerolog/log"
 	"strings"
 
-	"go.redsock.ru/moti/internal/core/models"
+	"github.com/rs/zerolog/log"
+	"go.redsock.ru/rerrors"
+
+	"go.redsock.ru/moti/internal/models"
 )
 
 type revisionParts struct {
@@ -14,21 +16,16 @@ type revisionParts struct {
 	Version    string
 }
 
-// ReadRevision read actual revision from remote repository
-// Cases:
-//  1. requestedVersion is git tag: just get commit with this tag
-//  2. requestedVersion is omitted: get the latest commit, try to read its tag
-//     if tag does not exist generate version
-//  3. requestedVersion is generated: get commit from its version
 func (r *gitRepo) ReadRevision(ctx context.Context, requestedVersion models.RequestedVersion) (models.Revision, error) {
 	var revParts revisionParts
+
 	var err error
 
 	switch {
 	case requestedVersion.IsGenerated():
 		revParts, err = r.readRevisionByGeneratedVersion(ctx, requestedVersion)
 		if err != nil {
-			return models.Revision{}, fmt.Errorf("r.readRevisionByGeneratedVersion: %w", err)
+			return models.Revision{}, rerrors.Wrap(err, "r.readRevisionByGeneratedVersion")
 		}
 	case requestedVersion.IsOmitted():
 		revParts, err = r.readRevisionForLatestCommit(ctx)
@@ -56,11 +53,8 @@ func (r *gitRepo) ReadRevision(ctx context.Context, requestedVersion models.Requ
 	return revision, nil
 }
 
-// readRevisionByTag read revision by passed git tag
-// tag has to be on the remote repository
 func (r *gitRepo) readRevisionByGitTagVersion(
-	ctx context.Context, requestedVersion models.RequestedVersion,
-) (revisionParts, error) {
+	ctx context.Context, requestedVersion models.RequestedVersion) (revisionParts, error) {
 	gitTagVersion := string(requestedVersion)
 
 	res, err := r.console.RunCmd(ctx, r.cacheDir, "git", "ls-remote", "origin", gitTagVersion)
@@ -79,6 +73,7 @@ func (r *gitRepo) readRevisionByGitTagVersion(
 		if strings.HasPrefix(rev[1], gitRefsTagPrefix) &&
 			strings.TrimPrefix(rev[1], gitRefsTagPrefix) == gitTagVersion {
 			commitHash = rev[0]
+
 			break
 		}
 	}
@@ -91,14 +86,13 @@ func (r *gitRepo) readRevisionByGitTagVersion(
 	return parts, nil
 }
 
-// readRevisionForLatestCommit read the latest commit
-// if tag for this commit exists use its as revision's version
-// otherwise generate version
-func (r *gitRepo) readRevisionForLatestCommit(
-	ctx context.Context,
-) (revisionParts, error) {
+func (r *gitRepo) readRevisionForLatestCommit(ctx context.Context) (revisionParts, error) {
 	headInfo, err := r.console.RunCmd(
-		ctx, r.cacheDir, "git", "ls-remote", "origin", gitLatestVersionRef,
+		ctx, r.cacheDir,
+		"git",
+		"ls-remote",
+		"origin",
+		gitLatestVersionRef,
 	)
 	if err != nil {
 		return revisionParts{}, models.ErrVersionNotFound
@@ -109,6 +103,7 @@ func (r *gitRepo) readRevisionForLatestCommit(
 	if len(lines) == 0 {
 		return revisionParts{}, fmt.Errorf("invalid lines of git info: %s", headInfo)
 	}
+
 	parts := strings.Fields(lines[0])
 	if len(parts) != 2 {
 		return revisionParts{}, fmt.Errorf("invalid parts of git info: %s", headInfo)
@@ -135,23 +130,26 @@ func (r *gitRepo) readRevisionForLatestCommit(
 
 		if strings.HasPrefix(rev[1], gitRefsTagPrefix) {
 			version = strings.TrimPrefix(rev[1], gitRefsTagPrefix)
+
 			break
 		}
 	}
 
 	if version != "" {
-		// version was found. return it
 		revParts := revisionParts{
 			CommitHash: commitHash,
 			Version:    version,
 		}
+
 		return revParts, nil
 	}
-	// didn't find tag for this commit, so generate version
 
-	// fetch commit by its hash
 	_, err = r.console.RunCmd(
-		ctx, r.cacheDir, "git", "fetch", "-f", "origin", "--depth=1", commitHash,
+		ctx, r.cacheDir,
+		"git",
+		"fetch", "-f",
+		"origin", "--depth=1",
+		commitHash,
 	)
 	if err != nil {
 		return revisionParts{}, fmt.Errorf("adapters.RunCmd (fetch): %w", err)
@@ -170,11 +168,11 @@ func (r *gitRepo) readRevisionForLatestCommit(
 		return revisionParts{}, fmt.Errorf("adapters.RunCmd (log): %w", err)
 	}
 
-	// got commit hash from result
 	lines = strings.Split(commitDatetime, "\n")
 	if len(lines) == 0 {
 		return revisionParts{}, fmt.Errorf("invalid lines of git log: %s", commitDatetime)
 	}
+
 	parts = strings.Fields(lines[0])
 	if len(parts) != 1 {
 		return revisionParts{}, fmt.Errorf("invalid parts of git log: %s", commitDatetime)
@@ -189,30 +187,34 @@ func (r *gitRepo) readRevisionForLatestCommit(
 		CommitHash: commitHash,
 		Version:    generatedVersion.GetVersionString(),
 	}
+
 	return revParts, nil
 }
 
-// readRevisionByGeneratedVersion check if commit in generated version exists
 func (r *gitRepo) readRevisionByGeneratedVersion(
-	ctx context.Context, requestedVersion models.RequestedVersion,
-) (revisionParts, error) {
-	generatedParts, err := requestedVersion.GetParts()
+	ctx context.Context, reqVersion models.RequestedVersion) (revisionParts, error) {
+	generatedParts, err := reqVersion.GetParts()
 	if err != nil {
-		return revisionParts{}, fmt.Errorf("requestedVersion.GetParts: %w", err)
+		return revisionParts{}, rerrors.Wrap(err, "RequestedVersion.GetParts")
 	}
 
-	// fetch by passed commit hash
 	_, err = r.console.RunCmd(
-		ctx, r.cacheDir, "git", "fetch", "-f", "origin", "--depth=1", generatedParts.CommitHash,
+		ctx, r.cacheDir,
+		"git",
+		"fetch", "-f",
+		"origin",
+		"--depth=1",
+		generatedParts.CommitHash,
 	)
+	//nolint:nilerr
 	if err != nil {
-		// do not parse error, just return as commit was not found
 		return revisionParts{}, nil
 	}
 
 	parts := revisionParts{
 		CommitHash: generatedParts.CommitHash,
-		Version:    string(requestedVersion),
+		Version:    string(reqVersion),
 	}
+
 	return parts, nil
 }

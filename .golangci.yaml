@@ -1,0 +1,116 @@
+# configuration settings https://golangci-lint.run/usage/configuration/
+
+version: "2"
+
+run:
+  timeout: 5m
+  issues-exit-code: 42
+
+
+formatters:
+  enable:
+#    - gofumpt
+    - goimports
+
+linters:
+  enable:
+    - varnamelen
+    - asasalint
+    - asciicheck
+    - bidichk
+    - bodyclose
+    - containedctx
+    - contextcheck
+    - cyclop
+    - decorder
+    - dogsled
+    - dupl
+    - dupword
+    - durationcheck
+    - errcheck
+    - errchkjson
+    - errname
+    - errorlint
+    - exhaustive
+    - forcetypeassert
+    - funlen
+    - gochecknoglobals
+    - gochecknoinits
+    - gocognit
+    - goconst
+    - gocritic
+    - gocyclo
+    - godox
+    - goheader
+    - gomoddirectives
+    - gomodguard
+    - goprintffuncname
+    - gosec
+    - govet
+    - grouper
+    - importas
+    - ineffassign
+    - interfacebloat
+    #    - ireturn
+    - lll
+    - loggercheck
+    - maintidx
+    - makezero
+    - misspell
+    - nakedret
+    - nestif
+    - nilerr
+    - nilnil
+    - nlreturn
+    - noctx
+    #    - nolintlint
+    #    - paralleltest
+    - prealloc
+    - predeclared
+    - promlinter
+    - reassign
+    - revive
+    - rowserrcheck
+    - sqlclosecheck
+    - staticcheck
+    - tagliatelle
+    - testableexamples
+    - thelper
+    - tparallel
+    - unconvert
+    - unparam
+    - unused
+    - usestdlibvars
+    - wastedassign
+    - whitespace
+    - wrapcheck
+    - wsl_v5
+
+  exclusions:
+    paths:
+      - "internal/rules"
+
+  settings:
+    tagliatelle:
+      case:
+        rules:
+          yaml: snake
+          json: snake
+    revive:
+      rules:
+        - name: package-comments
+          severity: warning
+          disabled: true
+          exclude: [ "" ]
+    gosec:
+      excludes:
+        # For file creations
+        - G304
+        # For HTTP Get requests
+        - G107
+        # For bash execution
+        - G204
+
+issues:
+  max-issues-per-linter: 10
+  max-same-issues: 10

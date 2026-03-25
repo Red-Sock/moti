@@ -10,10 +10,11 @@ import (
 	"go.redsock.ru/rerrors"
 	"go.redsock.ru/toolbox"
 
+	"go.redsock.ru/moti/internal/adapters/storage"
 	"go.redsock.ru/moti/internal/commands"
 	"go.redsock.ru/moti/internal/config"
-	"go.redsock.ru/moti/internal/core/models"
-	"go.redsock.ru/moti/internal/fs/fs"
+	"go.redsock.ru/moti/internal/fs"
+	"go.redsock.ru/moti/internal/models"
 )
 
 type Core struct {
@@ -21,7 +22,7 @@ type Core struct {
 }
 
 func (c *Core) Generate(ctx context.Context) error {
-	q := ProtocQuery{
+	query := ProtocQuery{
 		Imports: []string{
 			toolbox.Coalesce(c.env.MotiConfig.Generate.ProtoRoot, "."),
 		},
@@ -39,15 +40,15 @@ func (c *Core) Generate(ctx context.Context) error {
 			return rerrors.Wrap(err, "c.getModulePath")
 		}
 
-		q.Imports = append(q.Imports, modulePaths)
+		query.Imports = append(query.Imports, modulePaths)
 	}
 
-	q, err = c.GenerateInputs(q)
+	query, err = c.GenerateInputs(query)
 	if err != nil {
 		return rerrors.Wrap(err, "GenerateInputs")
 	}
 
-	command, args := q.Build()
+	command, args := query.Build()
 
 	log.Info().
 		Msg(command + " " + strings.Join(args, " \\\n           "))
@@ -61,7 +62,6 @@ func (c *Core) Generate(ctx context.Context) error {
 }
 
 func (c *Core) GenerateInputs(q ProtocQuery) (ProtocQuery, error) {
-
 	for _, input := range c.env.MotiConfig.Generate.Inputs {
 		moduleWalkerFunc := func(path string, err error) error {
 			switch {
@@ -84,12 +84,14 @@ func (c *Core) GenerateInputs(q ProtocQuery) (ProtocQuery, error) {
 				}
 
 				q.Imports = append(q.Imports, modulePaths)
+
 				return nil
 			}
 		}
 
 		if input.GitRepo.URL == "" {
 			fsWalker := fs.NewFSWalker(input.Directory, "")
+
 			err := fsWalker.WalkDir(moduleWalkerFunc)
 			if err != nil {
 				return q, rerrors.Wrap(err, "fsWalker.WalkDir")
@@ -104,6 +106,7 @@ func (c *Core) GenerateInputs(q ProtocQuery) (ProtocQuery, error) {
 		if err != nil {
 			return q, rerrors.Wrap(err, "c.isModuleInstalled")
 		}
+
 		if !isInstalled {
 			return q, rerrors.Wrap(models.ErrModuleNotInstalled, module)
 		}
@@ -151,6 +154,7 @@ func toUniqueMap(imports []string) map[string]struct{} {
 		if imp == "" {
 			continue
 		}
+
 		uniqueImports[imp] = struct{}{}
 	}
 
@@ -163,7 +167,7 @@ func mkdirForPluginsOut(plugins []config.Plugin) error {
 			continue
 		}
 
-		err := os.MkdirAll(plug.Out, os.ModePerm)
+		err := os.MkdirAll(plug.Out, storage.DirPerm)
 		if err != nil {
 			return rerrors.Wrap(err, "os.MkdirAll")
 		}

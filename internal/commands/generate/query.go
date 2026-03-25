@@ -27,6 +27,7 @@ func (q ProtocQuery) Build() (command string, args []string) {
 		arg := "--" + plug.Name + "_out="
 
 		var opts []string
+
 		for k, v := range plug.Opts {
 			if v != "" {
 				opts = append(opts, fmt.Sprintf("%s=%s", k, v))

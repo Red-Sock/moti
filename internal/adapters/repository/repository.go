@@ -3,7 +3,7 @@ package repository
 import (
 	"context"
 
-	"go.redsock.ru/moti/internal/core/models"
+	"go.redsock.ru/moti/internal/models"
 )
 
 type Repo interface {

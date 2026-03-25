@@ -3,14 +3,15 @@ package moduleconfig
 import (
 	"context"
 	"errors"
-	"fmt"
-	"github.com/rs/zerolog/log"
 	"strings"
+
+	"github.com/rs/zerolog/log"
+	"go.redsock.ru/rerrors"
 
 	"gopkg.in/yaml.v3"
 
 	"go.redsock.ru/moti/internal/adapters/repository"
-	"go.redsock.ru/moti/internal/core/models"
+	"go.redsock.ru/moti/internal/models"
 )
 
 type bufWork struct {
@@ -25,15 +26,20 @@ func readBufWork(ctx context.Context, repo repository.Repo, revision models.Revi
 	content, err := repo.ReadFile(ctx, revision, bufWorkFile)
 	if err != nil {
 		if errors.Is(err, models.ErrFileNotFound) {
-			log.Debug().Msg("buf config not found")
+			log.Debug().
+				Msg("buf config not found")
+
 			return bufWork{}, nil
 		}
-		return bufWork{}, fmt.Errorf("repo.ReadFile: %w", err)
+
+		return bufWork{}, rerrors.Wrap(err, "repo.ReadFile")
 	}
 
 	buf := bufWork{}
-	if err := yaml.NewDecoder(strings.NewReader(content)).Decode(&buf); err != nil {
-		return bufWork{}, fmt.Errorf("yaml.NewDecoder: %w", err)
+
+	err = yaml.NewDecoder(strings.NewReader(content)).Decode(&buf)
+	if err != nil {
+		return bufWork{}, rerrors.Wrap(err, "yaml.NewDecoder")
 	}
 
 	return buf, nil

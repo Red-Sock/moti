@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"go.redsock.ru/moti/internal/core/models"
+	"go.redsock.ru/moti/internal/models"
 )
 
 func (r *gitRepo) Fetch(ctx context.Context, revision models.Revision) error {

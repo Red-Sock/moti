@@ -25,7 +25,7 @@ func main() {
 	}
 
 	rootCmd.PersistentFlags().
-		String(flags.Config, flags.DefaultConfigFilePath,
+		String(flags.ConfigFlag, flags.DefaultConfigFilePath,
 			"Specify the absolute or relative path to the configuration file for setting up the application.")
 
 	addCommands(rootCmd,

@@ -3,19 +3,17 @@ package storage
 import (
 	"context"
 	"fmt"
-	"github.com/rs/zerolog/log"
 	"os"
 	"strings"
 
 	"github.com/codeclysm/extract/v3"
+	"github.com/rs/zerolog/log"
 	"golang.org/x/mod/sumdb/dirhash"
 
-	"go.redsock.ru/moti/internal/core/adapters"
-	"go.redsock.ru/moti/internal/core/models"
+	"go.redsock.ru/moti/internal/helpers"
+	"go.redsock.ru/moti/internal/models"
 )
 
-// Install package from archive
-// and calculateds hash of installed package
 func (s *Storage) Install(
 	cacheDownloadPaths models.CacheDownloadPaths,
 	module models.Module,
@@ -28,24 +26,25 @@ func (s *Storage) Install(
 		Str("commit", revision.CommitHash).
 		Msg("Install package")
 
-	version := adapters.SanitizePath(revision.Version)
+	version := helpers.SanitizePath(revision.Version)
 	installedDirPath := s.GetInstallDir(module.Name, version)
 
-	if err := os.MkdirAll(installedDirPath, dirPerm); err != nil {
+	if err := os.MkdirAll(installedDirPath, DirPerm); err != nil {
 		return "", fmt.Errorf("os.MkdirAll: %w", err)
 	}
 
-	fp, err := os.Open(cacheDownloadPaths.ArchiveFile)
+	openedFile, err := os.Open(cacheDownloadPaths.ArchiveFile)
 	if err != nil {
 		return "", fmt.Errorf("os.Open: %w", err)
 	}
-	defer func() { _ = fp.Close() }()
+
+	defer func() { _ = openedFile.Close() }()
 
 	renamer := getRenamer(moduleConfig)
 
 	log.Debug().Str("installedDirPath", installedDirPath).Msg("Starting extract")
 
-	if err := extract.Archive(context.TODO(), fp, installedDirPath, renamer); err != nil {
+	if err := extract.Archive(context.TODO(), openedFile, installedDirPath, renamer); err != nil {
 		return "", fmt.Errorf("extract.Archive: %w", err)
 	}
 
@@ -67,6 +66,7 @@ func getRenamer(moduleConfig models.ModuleConfig) func(string) string {
 				return strings.TrimPrefix(file, dir)
 			}
 		}
+
 		return file
 	}
 }

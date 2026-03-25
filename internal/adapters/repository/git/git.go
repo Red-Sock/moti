@@ -2,12 +2,13 @@ package git
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 
+	"github.com/rs/zerolog/log"
+	"go.redsock.ru/rerrors"
 	"golang.org/x/net/html"
 
 	"go.redsock.ru/moti/internal/adapters/repository"
@@ -44,71 +45,97 @@ type Console interface {
 // New returns gitRepo instance
 // remote: full remoteURL address without schema
 func New(ctx context.Context, remote string, cacheDir string, console Console) (repository.Repo, error) {
-	r := &gitRepo{
+	repo := &gitRepo{
 		cacheDir: cacheDir,
 		console:  console,
 	}
 
 	var err error
-	r.remoteURL, err = getRemote(remote)
+
+	repo.remoteURL, err = GetRemote(ctx, remote)
 	if err != nil {
-		return nil, fmt.Errorf("%w", err)
+		return nil, rerrors.Wrap(err)
 	}
 
-	if _, err := os.Stat(filepath.Join(r.cacheDir, "objects")); err == nil {
+	if _, err := os.Stat(filepath.Join(repo.cacheDir, "objects")); err == nil {
 		// repo is already exists
-		return r, nil
+		return repo, nil
 	}
 
-	if _, err := r.console.RunCmd(ctx, r.cacheDir, "git", "init", "--bare"); err != nil {
-		return nil, fmt.Errorf("adapters.RunCmd (init): %w", err)
+	if _, err := repo.console.RunCmd(ctx, repo.cacheDir, "git", "init", "--bare"); err != nil {
+		return nil, rerrors.Wrap(err, "adapters.RunCmd (init): %w", err)
 	}
 
-	_, err = r.console.RunCmd(ctx, r.cacheDir, "git", "remote", "add", "origin", r.remoteURL)
+	_, err = repo.console.RunCmd(ctx, repo.cacheDir, "git", "remote", "add", "origin", repo.remoteURL)
 	if err != nil {
-		return nil, fmt.Errorf("adapters.RunCmd (add origin): %w", err)
+		return nil, rerrors.Wrap(err, "adapters.RunCmd (add origin)")
 	}
 
-	return r, nil
+	return repo, nil
 }
 
-func getRemote(remoteURL string) (string, error) {
+func GetRemote(ctx context.Context, remoteURL string) (string, error) {
 	remoteURL = "https://" + remoteURL
-	resp, err := http.Get(remoteURL)
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, remoteURL, nil)
 	if err != nil {
-		return "", fmt.Errorf("reading page: %w", err)
+		return "", rerrors.Wrap(err)
 	}
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return "", rerrors.Wrap(err, "reading page")
+	}
+
+	defer func() {
+		cErr := resp.Body.Close()
+		if cErr != nil {
+			log.Error().
+				Err(cErr).
+				Msg("failed to close response body")
+		}
+	}()
 
 	doc, err := html.Parse(resp.Body)
 	if err != nil {
-		panic(err)
+		log.Panic().
+			Err(err).
+			Msg("failed to parse html")
 	}
 
-	var f func(*html.Node)
-	f = func(n *html.Node) {
-		if n.Type == html.ElementNode && n.Data == "meta" {
-			var metaName, content string
-			for _, attr := range n.Attr {
-				if attr.Key == "name" && attr.Val == "go-import" {
-					metaName = attr.Val
-				}
-				if attr.Key == "content" {
-					content = attr.Val
-				}
-			}
+	var nodeWalker func(node *html.Node)
+
+	nodeWalker = func(node *html.Node) {
+		if node.Type == html.ElementNode && node.Data == "meta" {
+			metaName, content := getMetaNameAndContent(node)
 			if metaName == "go-import" && content != "" {
-				// The content has format: "<import-prefix> <vcs> <repo-url>"
 				parts := strings.Fields(content)
 				if len(parts) == 3 {
 					remoteURL = parts[2]
 				}
 			}
 		}
-		for c := n.FirstChild; c != nil; c = c.NextSibling {
-			f(c)
+
+		for c := node.FirstChild; c != nil; c = c.NextSibling {
+			nodeWalker(c)
 		}
 	}
-	f(doc)
+
+	nodeWalker(doc)
 
 	return remoteURL, nil
+}
+
+func getMetaNameAndContent(n *html.Node) (metaName, content string) {
+	for _, attr := range n.Attr {
+		if attr.Key == "name" && attr.Val == "go-import" {
+			metaName = attr.Val
+		}
+
+		if attr.Key == "content" {
+			content = attr.Val
+		}
+	}
+
+	return metaName, content
 }

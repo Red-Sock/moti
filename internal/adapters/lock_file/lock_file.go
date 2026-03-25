@@ -12,8 +12,9 @@ import (
 	"github.com/rs/zerolog/log"
 	"go.redsock.ru/rerrors"
 
-	"go.redsock.ru/moti/internal/core/models"
-	"go.redsock.ru/moti/internal/fs/fs"
+	"go.redsock.ru/moti/internal/flags"
+	"go.redsock.ru/moti/internal/fs"
+	"go.redsock.ru/moti/internal/models"
 )
 
 type DirWalker interface {
@@ -21,10 +22,6 @@ type DirWalker interface {
 	Create(name string) (io.WriteCloser, error)
 	WalkDir(callback func(path string, err error) error) error
 }
-
-const (
-	lockFileName = "moti.lock"
-)
 
 type fileInfo struct {
 	version string
@@ -52,7 +49,7 @@ func New(dirWalker DirWalker) (*LockFile, error) {
 		cache:     cache,
 	}
 
-	fp, err := dirWalker.Open(lockFileName)
+	lockFileOpened, err := dirWalker.Open(flags.LockFileName)
 	if err != nil {
 		if !rerrors.Is(err, os.ErrNotExist) {
 			return nil, rerrors.Wrap(err)
@@ -61,7 +58,7 @@ func New(dirWalker DirWalker) (*LockFile, error) {
 		return lockFile, nil
 	}
 
-	fscanner := bufio.NewScanner(fp)
+	fscanner := bufio.NewScanner(lockFileOpened)
 
 	for fscanner.Scan() {
 		parts := strings.Fields(fscanner.Text())
@@ -81,6 +78,7 @@ func New(dirWalker DirWalker) (*LockFile, error) {
 
 func NewOrDie(workdir string) *LockFile {
 	dirWalker := fs.NewFSWalker(workdir, ".")
+
 	lock, err := New(dirWalker)
 	if err != nil {
 		log.Fatal().
@@ -91,8 +89,7 @@ func NewOrDie(workdir string) *LockFile {
 	return lock
 }
 
-// Read information about module by its name from lock file
-// github.com/grpc-ecosystem/grpc-gateway v0.0.0-20240502030614-85850831b7bad2b8b60cb09783d8095176f22d98 h1:hRu1vxAH6CVNmz12mpqKue5HVBQP2neoaM/q2DLm0i4=
+// Read information about the module by its name from a lock file
 func (l *LockFile) Read(moduleName string) (models.LockFileInfo, error) {
 	fileInf, ok := l.cache[moduleName]
 	if !ok {
@@ -104,13 +101,12 @@ func (l *LockFile) Read(moduleName string) (models.LockFileInfo, error) {
 		Version: fileInf.version,
 		Hash:    models.ModuleHash(fileInf.hash),
 	}
+
 	return lockFileInfo, nil
 }
 
-func (l *LockFile) Write(
-	moduleName string, revisionVersion string, installedPackageHash models.ModuleHash,
-) error {
-	fp, err := l.dirWalker.Create(lockFileName)
+func (l *LockFile) Write(moduleName string, revisionVersion string, installedPackageHash models.ModuleHash) error {
+	lockFile, err := l.dirWalker.Create(flags.LockFileName)
 	if err != nil {
 		return fmt.Errorf("l.dirWalker.Create: %w", err)
 	}
@@ -126,11 +122,12 @@ func (l *LockFile) Write(
 	for k := range l.cache {
 		keys = append(keys, k)
 	}
+
 	sort.Strings(keys)
 
 	for _, k := range keys {
 		r := fmt.Sprintf("%s %s %s\n", k, l.cache[k].version, l.cache[k].hash)
-		_, _ = fp.Write([]byte(r))
+		_, _ = lockFile.Write([]byte(r))
 	}
 
 	return nil

@@ -9,8 +9,7 @@ import (
 	"go.redsock.ru/moti/internal/commands"
 )
 
-type Command struct {
-}
+type Command struct{}
 
 func (c Command) Command() *cobra.Command {
 	cmd := &cobra.Command{

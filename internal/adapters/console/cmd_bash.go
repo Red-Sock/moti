@@ -16,11 +16,10 @@ func New() *bash {
 }
 
 func (bash) RunCmd(ctx context.Context, dir string, command string, commandParams ...string) (string, error) {
-	var stderr bytes.Buffer
-	var stdout bytes.Buffer
+	var stderr, stdout bytes.Buffer
 
 	fullCommand := append([]string{command}, commandParams...)
-	
+
 	cmd := exec.CommandContext(ctx, "bash", "-c", strings.Join(fullCommand, " "))
 	cmd.Dir = dir
 	cmd.Stderr = &stderr

@@ -3,15 +3,14 @@ package storage
 import (
 	"path/filepath"
 
-	"go.redsock.ru/moti/internal/core/adapters"
-	"go.redsock.ru/moti/internal/core/models"
+	"go.redsock.ru/moti/internal/helpers"
+	"go.redsock.ru/moti/internal/models"
 )
 
-// GetDownloadArchivePath returns full path to download archive (include extension)
 func (s *Storage) GetCacheDownloadPaths(module models.Module, revision models.Revision) models.CacheDownloadPaths {
 	cacheDownloadDir := filepath.Join(s.rootDir, cacheDir, cacheDownloadDir, module.Name)
 
-	fileName := adapters.SanitizePath(revision.Version)
+	fileName := helpers.SanitizePath(revision.Version)
 
 	archiveFile := filepath.Join(cacheDownloadDir, fileName) + ".zip"
 	archiveHashFile := filepath.Join(cacheDownloadDir, fileName) + ".ziphash"

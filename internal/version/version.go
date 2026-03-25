@@ -20,18 +20,23 @@ func buildVersion() (bi *debug.BuildInfo, ver string) {
 	if !ok {
 		return nil, ""
 	}
+
 	const revisionPrefix = 7
+
 	revision := buildSetting(bi, "vcs.revision")
 	modified := buildSetting(bi, "vcs.modified")
 	time := buildSetting(bi, "vcs.time")
+
 	if revision == "" {
 		return bi, time
 	} else if len(revision) > revisionPrefix {
 		revision = revision[:revisionPrefix]
 	}
+
 	if modified != "false" {
 		revision += "-modified"
 	}
+
 	if time == "" {
 		return bi, revision
 	}

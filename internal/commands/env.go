@@ -8,7 +8,7 @@ import (
 	moduleconfig "go.redsock.ru/moti/internal/adapters/module_config"
 	"go.redsock.ru/moti/internal/adapters/storage"
 	"go.redsock.ru/moti/internal/config"
-	"go.redsock.ru/moti/internal/fs/fs"
+	"go.redsock.ru/moti/internal/fs"
 )
 
 type Env struct {

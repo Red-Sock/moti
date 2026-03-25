@@ -6,7 +6,7 @@ import (
 	"go.redsock.ru/rerrors"
 
 	"go.redsock.ru/moti/internal/adapters/repository"
-	"go.redsock.ru/moti/internal/core/models"
+	"go.redsock.ru/moti/internal/models"
 )
 
 type ModuleConfig struct {
@@ -20,13 +20,14 @@ func New() *ModuleConfig {
 	return &ModuleConfig{}
 }
 
-func (c *ModuleConfig) ReadFromRepo(ctx context.Context, repo repository.Repo, revision models.Revision) (models.ModuleConfig, error) {
-	buf, err := readBufWork(ctx, repo, revision)
+func (c *ModuleConfig) ReadFromRepo(
+	ctx context.Context, repo repository.Repo, rev models.Revision) (models.ModuleConfig, error) {
+	buf, err := readBufWork(ctx, repo, rev)
 	if err != nil {
 		return models.ModuleConfig{}, rerrors.Wrap(err, "readBufWork")
 	}
 
-	modules, err := readMoti(ctx, repo, revision)
+	modules, err := readMoti(ctx, repo, rev)
 	if err != nil {
 		return models.ModuleConfig{}, rerrors.Wrap(err, "read moti")
 	}
@@ -35,6 +36,6 @@ func (c *ModuleConfig) ReadFromRepo(ctx context.Context, repo repository.Repo, r
 		Directories:  buf.Directories,
 		Dependencies: modules,
 	}
-	
+
 	return moduleConfig, nil
 }
