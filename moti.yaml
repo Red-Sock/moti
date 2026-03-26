@@ -8,26 +8,26 @@ deps:
   - github.com/grpc-ecosystem/grpc-gateway@v2.19.1
 
 generate:
-  plugins:
-    - name: go
-      out: .
-      opts:
-        paths: source_relative
-    - name: go-grpc
-      out: .
-      opts:
-        paths: source_relative
-        require_unimplemented_servers: false
-    - name: grpc-gateway
-      out: .
-      opts:
-        paths: source_relative
-    - name: openapiv2
-      out: .
-      opts:
-        simple_operation_ids: false
-        generate_unbound_methods: false
-    - name: validate-go
-      out: .
-      opts:
-        paths: source_relative
+  - plugins:
+      - name: go
+        out: .
+        opts:
+          paths: source_relative
+      - name: go-grpc
+        out: .
+        opts:
+          paths: source_relative
+          require_unimplemented_servers: false
+      - name: grpc-gateway
+        out: .
+        opts:
+          paths: source_relative
+      - name: openapiv2
+        out: .
+        opts:
+          simple_operation_ids: false
+          generate_unbound_methods: false
+      - name: validate-go
+        out: .
+        opts:
+          paths: source_relative

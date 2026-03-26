@@ -38,47 +38,50 @@ func (c *Core) Generate(ctx context.Context) error {
 	if c.Walker == nil {
 		c.Walker = &fsWalker{}
 	}
-	query := ProtocQuery{
-		Imports: []string{
-			toolbox.Coalesce(c.Env.MotiConfig.Generate.ProtoRoot, "."),
-		},
-		Plugins: c.Env.MotiConfig.Generate.Plugins,
-	}
 
-	err := mkdirForPluginsOut(c.Env.MotiConfig.Generate.Plugins)
-	if err != nil {
-		return rerrors.Wrap(err, "mkdir for plugins failed")
-	}
-
-	for _, dep := range c.Env.MotiConfig.Deps {
-		modulePaths, err := c.getModulePath(dep)
-		if err != nil {
-			return rerrors.Wrap(err, "c.getModulePath")
+	for _, genCfg := range c.Env.MotiConfig.Generate {
+		query := ProtocQuery{
+			Imports: []string{
+				toolbox.Coalesce(genCfg.ProtoRoot, "."),
+			},
+			Plugins: genCfg.Plugins,
 		}
-		
-		query.Imports = append(query.Imports, modulePaths)
-	}
 
-	query, err = c.GenerateInputs(query)
-	if err != nil {
-		return rerrors.Wrap(err, "GenerateInputs")
-	}
+		err := mkdirForPluginsOut(genCfg.Plugins)
+		if err != nil {
+			return rerrors.Wrap(err, "mkdir for plugins failed")
+		}
 
-	command, args := query.Build()
+		for _, dep := range c.Env.MotiConfig.Deps {
+			modulePaths, err := c.getModulePath(dep)
+			if err != nil {
+				return rerrors.Wrap(err, "c.getModulePath")
+			}
 
-	log.Info().
-		Msg(command + " " + strings.Join(args, " \\\n           "))
+			query.Imports = append(query.Imports, modulePaths)
+		}
 
-	_, err = c.Env.Console.RunCmd(ctx, c.Env.WorkDir, command, args...)
-	if err != nil {
-		return rerrors.Wrap(err, "adapters.RunCmd")
+		query, err = c.GenerateInputs(query, genCfg)
+		if err != nil {
+			return rerrors.Wrap(err, "GenerateInputs")
+		}
+
+		command, args := query.Build()
+
+		log.Info().
+			Msg(command + " " + strings.Join(args, " \\\n           "))
+
+		_, err = c.Env.Console.RunCmd(ctx, c.Env.WorkDir, command, args...)
+		if err != nil {
+			return rerrors.Wrap(err, "adapters.RunCmd")
+		}
 	}
 
 	return nil
 }
 
-func (c *Core) GenerateInputs(query ProtocQuery) (ProtocQuery, error) {
-	for _, input := range c.Env.MotiConfig.Generate.Inputs {
+func (c *Core) GenerateInputs(query ProtocQuery, genCfg config.Generate) (ProtocQuery, error) {
+	for _, input := range genCfg.Inputs {
 		if input.GitRepo.URL == "" {
 			err := c.generateFromLocalFS(&query, input)
 			if err != nil {

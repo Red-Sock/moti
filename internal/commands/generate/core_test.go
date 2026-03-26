@@ -52,9 +52,11 @@ func TestGenerate(t *testing.T) {
 	c := &Core{
 		Env: commands.Env{
 			MotiConfig: config.Config{
-				Generate: config.Generate{
-					Inputs: []config.Input{
-						{Directory: "test"},
+				Generate: []config.Generate{
+					{
+						Inputs: []config.Input{
+							{Directory: "test"},
+						},
 					},
 				},
 			},

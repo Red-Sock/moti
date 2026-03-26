@@ -17,7 +17,7 @@ type Config struct {
 
 	Deps []string `json:"deps" yaml:"deps"`
 
-	Generate Generate `json:"generate" yaml:"generate"`
+	Generate []Generate `json:"generate" yaml:"generate"`
 }
 
 func Read(filepath string) (Config, error) {

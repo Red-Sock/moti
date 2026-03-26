@@ -46,16 +46,16 @@ There are several ways to get proto files to generate:
 1. from current local repository:
 ```yaml
 generate:
-  inputs:
-    - directory: WHERE YOUR PROTO FILES ARE
+  - inputs:
+      - directory: WHERE YOUR PROTO FILES ARE
 ```
 2. from remote git repository:
 ```yaml
 generate:
-  inputs:
-    - git_repo:
-        url: "URL TO REMOTE REPO"
-        sub_directory: DIR WITH PROTO FILES ON REMOTE REPO
+  - inputs:
+      - git_repo:
+          url: "URL TO REMOTE REPO"
+          sub_directory: DIR WITH PROTO FILES ON REMOTE REPO
 ```
 **NOTE:** format `url` the same as in `deps` section.
 
@@ -63,16 +63,17 @@ generate:
 
 Example:
 ```yaml
-  plugins:
-    - name: go
-      out: .
-      opts:
-        paths: source_relative
-    - name: go-grpc
-      out: .
-      opts:
-        paths: source_relative
-        require_unimplemented_servers: false
+generate:
+  - plugins:
+      - name: go
+        out: .
+        opts:
+          paths: source_relative
+      - name: go-grpc
+        out: .
+        opts:
+          paths: source_relative
+          require_unimplemented_servers: false
 ```
 
 ## Package manager

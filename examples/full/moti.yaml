@@ -3,21 +3,38 @@ cache_path: proto_modules
 deps:
   - github.com/googleapis/googleapis
   - go.redsock.ru/protoc-gen-npm@v0.0.17
-#  - github.com/vervstack/Matreshka@v1.0.95
+  - github.com/vervstack/Matreshka@v1.0.95
 
 generate:
-  proto_root: api/grpc
-  inputs:
-    - directory: "api/grpc"
-    - git_repo:
-        url: github.com/vervstack/Matreshka@v1.0.95
-  plugins:
-    - name: go
-      out: internal/pkg/api
-    - name: go-grpc
-      out: internal/pkg/api
-    - name: grpc-gateway
-      out: internal/pkg/api
+#  Server gen
+  - proto_root: api/grpc
+    inputs:
+      - directory: "api/grpc"
+    plugins:
+      - name: go
+        out: internal/pkg/api
 
-    - name: grpc-gateway-ts
-      out: internal/pkg/web/@vervstack/matreshka
+      - name: go-grpc
+        out: internal/api/server
+      - name: grpc-gateway
+        out: internal/api/server
+
+      - name: grpc-gateway-ts
+        out: internal/pkg/web/@vervstack/matreshka
+
+#  Clients gen
+  - inputs:
+      - git_repo:
+          url: github.com/vervstack/Matreshka@v1.0.95
+    plugins:
+      - name: go
+        out: internal/api/clients
+        opts:
+#          Generates code right in out directory
+#          paths: source_relative
+          module: go.vervstack.ru
+      - name: go-grpc
+        out: internal/api/clients
+        opts:
+#          paths: source_relative
+          module: go.vervstack.ru
