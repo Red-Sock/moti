@@ -13,26 +13,11 @@ generate:
         url: github.com/vervstack/Matreshka@v1.0.95
   plugins:
     - name: go
-      out: pkg/api
-#      opts:
-#        paths: source_relative
+      out: internal/pkg/api
     - name: go-grpc
-      out: pkg/api
-#      opts:
-#        paths: source_relative
+      out: internal/pkg/api
     - name: grpc-gateway
-      out: pkg/api
-#      opts:
-#        paths: source_relative
+      out: internal/pkg/api
 
     - name: grpc-gateway-ts
-      out: pkg/web/@vervstack/matreshka
-
-    - name: openapiv2
-      out: pkg/docs/swaggers
-
-    - name: docs
-      out: pkg/docs
-
-    - name: npm
-      out: pkg/web
+      out: internal/pkg/web/@vervstack/matreshka
