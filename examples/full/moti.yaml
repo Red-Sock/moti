@@ -7,20 +7,20 @@ deps:
 
 generate:
 #  Server gen
-  - proto_root: api/grpc
-    inputs:
-      - directory: "api/grpc"
-    plugins:
-      - name: go
-        out: internal/pkg/api
-
-      - name: go-grpc
-        out: internal/api/server
-      - name: grpc-gateway
-        out: internal/api/server
-
-      - name: grpc-gateway-ts
-        out: internal/pkg/web/@vervstack/matreshka
+#  - proto_root: api/grpc
+#    inputs:
+#      - directory: "api/grpc"
+#    plugins:
+#      - name: go
+#        out: internal/pkg/api
+#
+#      - name: go-grpc
+#        out: internal/api/server
+#      - name: grpc-gateway
+#        out: internal/api/server
+#
+#      - name: grpc-gateway-ts
+#        out: internal/pkg/web/@vervstack/matreshka
 
 #  Clients gen
   - inputs:
@@ -32,9 +32,9 @@ generate:
         opts:
 #          Generates code right in out directory
 #          paths: source_relative
-          module: go.vervstack.ru
+          module: go.vervstack.ru/matreshka/pkg
       - name: go-grpc
         out: internal/api/clients
         opts:
 #          paths: source_relative
-          module: go.vervstack.ru
+          module: go.vervstack.ru/matreshka/pkg

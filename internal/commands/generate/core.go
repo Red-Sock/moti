@@ -3,6 +3,7 @@ package generate
 import (
 	"context"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 
@@ -40,64 +41,53 @@ func (c *Core) Generate(ctx context.Context) error {
 	}
 
 	for _, genCfg := range c.Env.MotiConfig.Generate {
-		query := ProtocQuery{
-			Imports: []string{
-				toolbox.Coalesce(genCfg.ProtoRoot, "."),
-			},
-			Plugins: genCfg.Plugins,
-		}
-
 		err := mkdirForPluginsOut(genCfg.Plugins)
 		if err != nil {
 			return rerrors.Wrap(err, "mkdir for plugins failed")
 		}
 
-		for _, dep := range c.Env.MotiConfig.Deps {
-			modulePaths, err := c.getModulePath(dep)
-			if err != nil {
-				return rerrors.Wrap(err, "c.getModulePath")
+		for _, input := range genCfg.Inputs {
+			query := ProtocQuery{
+				Imports: []string{
+					c.getFirstInput(input),
+				},
+				Plugins: genCfg.Plugins,
 			}
 
-			query.Imports = append(query.Imports, modulePaths)
-		}
+			for _, dep := range c.Env.MotiConfig.Deps {
+				modulePaths, err := c.getModulePath(dep)
+				if err != nil {
+					return rerrors.Wrap(err, "c.getModulePath")
+				}
 
-		query, err = c.GenerateInputs(query, genCfg)
-		if err != nil {
-			return rerrors.Wrap(err, "GenerateInputs")
-		}
+				query.Imports = append(query.Imports, modulePaths)
+			}
 
-		command, args := query.Build()
+			if input.GitRepo.URL == "" {
+				err = c.generateFromLocalFS(&query, input)
+				if err != nil {
+					return rerrors.Wrap(err, "generateFromLocalFS")
+				}
+			} else {
+				err = c.generateFromGitRepo(&query, input)
+				if err != nil {
+					return rerrors.Wrap(err, "generateFromGitRepo")
+				}
+			}
 
-		log.Info().
-			Msg(command + " " + strings.Join(args, " \\\n           "))
+			command, args := query.Build()
 
-		_, err = c.Env.Console.RunCmd(ctx, c.Env.WorkDir, command, args...)
-		if err != nil {
-			return rerrors.Wrap(err, "adapters.RunCmd")
+			log.Info().
+				Msg(command + " " + strings.Join(args, " \\\n           "))
+
+			_, err = c.Env.Console.RunCmd(ctx, c.Env.WorkDir, command, args...)
+			if err != nil {
+				return rerrors.Wrap(err, "adapters.RunCmd")
+			}
 		}
 	}
 
 	return nil
-}
-
-func (c *Core) GenerateInputs(query ProtocQuery, genCfg config.Generate) (ProtocQuery, error) {
-	for _, input := range genCfg.Inputs {
-		if input.GitRepo.URL == "" {
-			err := c.generateFromLocalFS(&query, input)
-			if err != nil {
-				return query, rerrors.Wrap(err, "generateFromLocalFS")
-			}
-
-			continue
-		}
-
-		err := c.generateFromGitRepo(&query, input)
-		if err != nil {
-			return query, rerrors.Wrap(err, "generateFromGitRepo")
-		}
-	}
-
-	return query, nil
 }
 
 func (c *Core) generateFromLocalFS(query *ProtocQuery, input config.Input) error {
@@ -181,6 +171,22 @@ func (c *Core) getModulePath(requestedDependency string) (string, error) {
 	}
 
 	return c.Env.Storage.GetInstallDir(module.Name, lockFileInfo.Version), nil
+}
+
+func (c *Core) getFirstInput(inp config.Input) string {
+	if inp.GitRepo.URL == "" {
+		return toolbox.Coalesce(inp.Directory, ".")
+	}
+
+	modulePath, err := c.getModulePath(inp.GitRepo.URL)
+	if err != nil {
+		log.Panic().
+			Err(err).
+			Str("url", inp.GitRepo.URL).
+			Msg("Error getting module path for git repo")
+	}
+
+	return path.Join(modulePath, inp.GitRepo.SubDirectory)
 }
 
 func toUniqueMap(imports []string) map[string]struct{} {

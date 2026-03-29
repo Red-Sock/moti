@@ -71,3 +71,47 @@ func TestGenerate(t *testing.T) {
 	err := c.Generate(ctx)
 	require.NoError(t, err)
 }
+
+func TestGenerate_MultipleInputs(t *testing.T) {
+	ctx := t.Context()
+
+	var commandsRun []string
+	mConsole := mocks.NewConsoleMock(t)
+	mConsole.RunCmdMock.Set(func(ctx context.Context, dir string, command string, commandParams ...string) (string, error) {
+		commandsRun = append(commandsRun, command+" "+strings.Join(commandParams, " "))
+		return "", nil
+	})
+
+	mStorage := mocks.NewIStorageMock(t)
+	mLockFile := mocks.NewILockFileMock(t)
+	mWalker := mocks.NewIWalkerMock(t)
+	mWalker.WalkDirMock.Set(func(root string, path string, callback func(path string, err error) error) error {
+		return callback(root+"/file.proto", nil)
+	})
+
+	c := &Core{
+		Env: commands.Env{
+			MotiConfig: config.Config{
+				Generate: []config.Generate{
+					{
+						Inputs: []config.Input{
+							{Directory: "test1"},
+							{Directory: "test2"},
+						},
+					},
+				},
+			},
+			Console:  mConsole,
+			Storage:  mStorage,
+			LockFile: mLockFile,
+			WorkDir:  ".",
+		},
+		Walker: mWalker,
+	}
+
+	err := c.Generate(ctx)
+	require.NoError(t, err)
+	require.Len(t, commandsRun, 2)
+	require.Contains(t, commandsRun[0], "test1/*.proto")
+	require.Contains(t, commandsRun[1], "test2/*.proto")
+}
