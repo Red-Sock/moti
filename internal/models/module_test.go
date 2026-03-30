@@ -67,9 +67,14 @@ func Test_RequestedVersion_GetParts(t *testing.T) {
 			expectedResult:   GeneratedVersionParts{},
 			expectedError:    true,
 		},
-		"generated": {
+		"generated pseudo-version (no longer supported)": {
 			requestedVersion: "v0.0.0-20240222234643-814bf88cf225",
-			expectedResult:   GeneratedVersionParts{Datetime: "20240222234643", CommitHash: "814bf88cf225"},
+			expectedResult:   GeneratedVersionParts{},
+			expectedError:    true,
+		},
+		"commit hash": {
+			requestedVersion: "220e0db758f9ce96d9b1f457234616284530622b",
+			expectedResult:   GeneratedVersionParts{CommitHash: "220e0db758f9ce96d9b1f457234616284530622b"},
 			expectedError:    false,
 		},
 	}
@@ -117,8 +122,12 @@ func Test_RequestedVersion_IsGenerated(t *testing.T) {
 			requestedVersion: Omitted,
 			expectedResult:   false,
 		},
-		"generated": {
+		"not generated, pseudo-version": {
 			requestedVersion: "v0.0.0-20240222234643-814bf88cf225",
+			expectedResult:   false,
+		},
+		"commit hash": {
+			requestedVersion: "220e0db758f9ce96d9b1f457234616284530622b",
 			expectedResult:   true,
 		},
 	}
@@ -198,12 +207,12 @@ func Test_GeneratedVersionParts_GetVersionString(t *testing.T) {
 		expectedResult string
 	}{
 		"case 1": {
-			parts:          GeneratedVersionParts{Datetime: "20240222234643", CommitHash: "814bf88cf225"},
-			expectedResult: "v0.0.0-20240222234643-814bf88cf225",
+			parts:          GeneratedVersionParts{CommitHash: "814bf88cf225"},
+			expectedResult: "814bf88cf225",
 		},
 		"case 2": {
-			parts:          GeneratedVersionParts{Datetime: "20230212224650", CommitHash: "914af88cf235"},
-			expectedResult: "v0.0.0-20230212224650-914af88cf235",
+			parts:          GeneratedVersionParts{CommitHash: "914af88cf235"},
+			expectedResult: "914af88cf235",
 		},
 	}
 

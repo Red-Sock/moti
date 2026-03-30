@@ -8,13 +8,6 @@ import (
 const (
 	// If version was omitted
 	Omitted RequestedVersion = ""
-
-	// generated version prefix
-	generatedVersionPrefix = "v0.0.0"
-	// generated version looks like: v0.0.0-20240222234643-814bf88cf225
-	// prefix + datetime + commit
-	generatedVersionPartsCount = 3
-	generatedVersionSep        = "-"
 )
 
 type (
@@ -35,7 +28,6 @@ type Module struct {
 }
 
 type GeneratedVersionParts struct {
-	Datetime   string
 	CommitHash string
 }
 
@@ -55,43 +47,43 @@ func NewModule(dependency string) Module {
 	}
 }
 
-// GetParts return parts of GeneratedVersion
-// if RequestedVersion is not generated return error
+// GetParts returns GeneratedVersionParts if RequestedVersion is a commit hash
+// if RequestedVersion is not a commit hash return error
 func (v RequestedVersion) GetParts() (GeneratedVersionParts, error) {
-	parts := strings.Split(string(v), generatedVersionSep)
-	if len(parts) != generatedVersionPartsCount {
-		return GeneratedVersionParts{}, ErrRequestedVersionNotGenerated
+	if v.IsHex() {
+		return GeneratedVersionParts{
+			CommitHash: string(v),
+		}, nil
 	}
 
-	if parts[0] != generatedVersionPrefix {
-		return GeneratedVersionParts{}, ErrRequestedVersionNotGenerated
-	}
-
-	return GeneratedVersionParts{
-		Datetime:   parts[1],
-		CommitHash: parts[2],
-	}, nil
+	return GeneratedVersionParts{}, ErrRequestedVersionNotGenerated
 }
 
 func (v RequestedVersion) GetVersionString() string {
 	return string(v)
 }
 
-// IsGenerated check if requested was generated and it's not a commit's tag
-// like v0.0.0-20240222234643-814bf88cf225 in go mod
+// IsGenerated check if requested version is a commit hash
 func (v RequestedVersion) IsGenerated() bool {
-	_, err := v.GetParts()
+	return v.IsHex()
+}
 
-	return err == nil
+// IsHex check if requested version is a hex string (commit hash)
+func (v RequestedVersion) IsHex() bool {
+	return isHex(string(v))
 }
 
 // IsCommitHash check if requested version is a full commit hash (40-char hex)
 func (v RequestedVersion) IsCommitHash() bool {
-	if len(v) != 40 {
+	return len(v) == 40 && v.IsHex()
+}
+
+func isHex(s string) bool {
+	if len(s) < 7 {
 		return false
 	}
 
-	for _, c := range v {
+	for _, c := range s {
 		if (c < '0' || c > '9') && (c < 'a' || c > 'f') && (c < 'A' || c > 'F') {
 			return false
 		}
