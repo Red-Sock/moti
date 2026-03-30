@@ -7,26 +7,26 @@ import (
 	"go.redsock.ru/rerrors"
 )
 
-type Walker struct {
+type DirWalker struct {
 	*Adapter
 
 	path string
 }
 
-func NewFSWalker(root, path string) *Walker {
+func NewFSWalker(root, path string) *DirWalker {
 	if path == "" {
 		path = "."
 	}
 
 	diskFS := os.DirFS(root)
 
-	return &Walker{
+	return &DirWalker{
 		Adapter: &Adapter{diskFS, root},
 		path:    path,
 	}
 }
 
-func (w *Walker) WalkDir(callback func(path string, err error) error) error {
+func (w *DirWalker) WalkDir(callback func(path string, err error) error) error {
 	err := fs.WalkDir(w.FS, w.path, func(path string, d fs.DirEntry, err error) error {
 		return callback(path, err)
 	})

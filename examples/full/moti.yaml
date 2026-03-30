@@ -4,7 +4,7 @@ deps:
   - github.com/googleapis/googleapis
   - go.redsock.ru/protoc-gen-npm@v0.0.17
   - github.com/vervstack/Matreshka@v1.0.95
-
+  - github.com/vervstack/Velez@220e0db758f9ce96d9b1f457234616284530622b
 generate:
 #  Server gen
 #  - proto_root: api/grpc
@@ -26,6 +26,7 @@ generate:
   - inputs:
       - git_repo:
           url: github.com/vervstack/Matreshka@v1.0.95
+          sub_directory: api/grpc
     plugins:
       - name: go
         out: internal/api/clients

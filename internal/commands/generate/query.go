@@ -7,21 +7,47 @@ import (
 	"go.redsock.ru/moti/internal/config"
 )
 
+const (
+	protocBin = "protoc"
+)
+
 type ProtocQuery struct {
-	Files   []string
 	Imports []string
 	Plugins []config.Plugin
+
+	Files []string
 }
 
 func (q ProtocQuery) Build() (command string, args []string) {
-	command = "protoc"
+	args = q.buildImports()
+	args = append(args, q.buildPlugins()...)
+	args = append(args, q.Files...)
+
+	//uniqueProtoFileDirs := make(map[string]struct{})
+	//for _, file := range q.Files {
+	//	uniqueProtoFileDirs[filepath.Dir(file)] = struct{}{}
+	//}
+	//
+	//for file := range uniqueProtoFileDirs {
+	//	args = append(args, file+"/*.proto")
+	//}
+
+	return protocBin, args
+}
+
+func (q ProtocQuery) buildImports() (imports []string) {
 	q.Imports = removeDoubles(q.Imports)
 
+	imports = make([]string, 0, len(q.Imports))
+
 	for _, imp := range q.Imports {
-		//slices.Sorted(maps.Keys(toUniqueMap(q.Imports)))
-		args = append(args, "-I "+imp)
+		imports = append(imports, "-I "+imp)
 	}
 
+	return imports
+}
+
+func (q ProtocQuery) buildPlugins() (plugins []string) {
 	for _, plug := range q.Plugins {
 		arg := "--" + plug.Name + "_out="
 
@@ -40,20 +66,10 @@ func (q ProtocQuery) Build() (command string, args []string) {
 		}
 
 		arg += plug.Out
-		args = append(args, arg)
+		plugins = append(plugins, arg)
 	}
 
-	args = append(args, q.Files...)
-	//uniqueProtoFileDirs := make(map[string]struct{})
-	//for _, file := range q.Files {
-	//	uniqueProtoFileDirs[filepath.Dir(file)] = struct{}{}
-	//}
-	//
-	//for file := range uniqueProtoFileDirs {
-	//	args = append(args, file+"/*.proto")
-	//}
-
-	return command, args
+	return plugins
 }
 
 func removeDoubles(in []string) []string {

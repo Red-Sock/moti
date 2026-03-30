@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"go.redsock.ru/moti/internal/commands"
+	"go.redsock.ru/moti/internal/fs"
 )
 
 type Command struct{}
@@ -38,7 +39,8 @@ func (c Command) Action(cmd *cobra.Command, args []string) error {
 
 func (c Command) Do(cmd *cobra.Command, _ []string) error {
 	app := Core{
-		Env: commands.GetProductionEnvironmentOrDie(cmd),
+		Env:    commands.GetProductionEnvironmentOrDie(cmd),
+		Walker: &fs.FsWalker{},
 	}
 
 	err := app.Generate(cmd.Context())

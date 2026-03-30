@@ -20,36 +20,20 @@ import (
 
 type Core struct {
 	Env    commands.Env
-	Walker IWalker
-}
-
-//go:generate minimock -i IWalker -o ../../mocks -g -s "_mock.go"
-type IWalker interface {
-	WalkDir(root, path string, callback func(path string, err error) error) error
-}
-
-type fsWalker struct{}
-
-func (f *fsWalker) WalkDir(root, path string, callback func(path string, err error) error) error {
-	w := fs.NewFSWalker(root, path)
-	return w.WalkDir(callback)
+	Walker fs.IWalker
 }
 
 func (c *Core) Generate(ctx context.Context) error {
-	if c.Walker == nil {
-		c.Walker = &fsWalker{}
-	}
-
 	for _, genCfg := range c.Env.MotiConfig.Generate {
 		err := mkdirForPluginsOut(genCfg.Plugins)
 		if err != nil {
 			return rerrors.Wrap(err, "mkdir for plugins failed")
 		}
-
 		for _, input := range genCfg.Inputs {
+			root := c.getFirstInput(input)
 			query := ProtocQuery{
 				Imports: []string{
-					c.getFirstInput(input),
+					root,
 				},
 				Plugins: genCfg.Plugins,
 			}
@@ -60,7 +44,11 @@ func (c *Core) Generate(ctx context.Context) error {
 					return rerrors.Wrap(err, "c.getModulePath")
 				}
 
-				query.Imports = append(query.Imports, modulePaths)
+				if !strings.HasPrefix(modulePaths, root) {
+					// Do not import already imported root
+					query.Imports = append(query.Imports, modulePaths)
+				}
+
 			}
 
 			if input.GitRepo.URL == "" {
@@ -104,7 +92,7 @@ func (c *Core) generateFromLocalFS(query *ProtocQuery, input config.Input) error
 		return nil
 	}
 
-	err := c.Walker.WalkDir(input.Directory, "", walker)
+	err := c.Walker.WalkDir(input.Directory, walker)
 	if err != nil {
 		return rerrors.Wrap(err, "Walker.WalkDir")
 	}
@@ -129,23 +117,31 @@ func (c *Core) generateFromGitRepo(query *ProtocQuery, input config.Input) error
 		return rerrors.Wrap(err, "c.getModulePath")
 	}
 
+	modulePaths = path.Join(modulePaths, input.GitRepo.SubDirectory)
+
 	gitGenerateCb := func(path string, err error) error {
 		containsProto, err := isContainingProto(path, err)
 		if err != nil {
 			return err
 		}
 
-		if containsProto {
-			moduleProtoPath := filepath.Join(modulePaths, path)
+		if !containsProto {
+			return nil
+		}
 
-			query.Files = append(query.Files, moduleProtoPath)
+		moduleProtoPath := filepath.Join(modulePaths, path)
+
+		if !strings.HasPrefix(modulePaths, query.Imports[0]) {
 			query.Imports = append(query.Imports, filepath.Dir(moduleProtoPath))
+			query.Files = append(query.Files, moduleProtoPath)
+		} else {
+			query.Files = append(query.Files, path)
 		}
 
 		return nil
 	}
 
-	err = c.Walker.WalkDir(modulePaths, input.GitRepo.SubDirectory, gitGenerateCb)
+	err = c.Walker.WalkDir(modulePaths, gitGenerateCb)
 	if err != nil {
 		return rerrors.Wrap(err, "Walker.WalkDir")
 	}
@@ -187,20 +183,6 @@ func (c *Core) getFirstInput(inp config.Input) string {
 	}
 
 	return path.Join(modulePath, inp.GitRepo.SubDirectory)
-}
-
-func toUniqueMap(imports []string) map[string]struct{} {
-	uniqueImports := make(map[string]struct{}, len(imports))
-
-	for _, imp := range imports {
-		if imp == "" {
-			continue
-		}
-
-		uniqueImports[imp] = struct{}{}
-	}
-
-	return uniqueImports
 }
 
 func mkdirForPluginsOut(plugins []config.Plugin) error {
