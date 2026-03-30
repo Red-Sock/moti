@@ -67,12 +67,14 @@ func (v RequestedVersion) GetParts() (GeneratedVersionParts, error) {
 		return GeneratedVersionParts{}, ErrRequestedVersionNotGenerated
 	}
 
-	ver := GeneratedVersionParts{
+	return GeneratedVersionParts{
 		Datetime:   parts[1],
 		CommitHash: parts[2],
-	}
+	}, nil
+}
 
-	return ver, nil
+func (v RequestedVersion) GetVersionString() string {
+	return string(v)
 }
 
 // IsGenerated check if requested was generated and it's not a commit's tag
@@ -83,11 +85,26 @@ func (v RequestedVersion) IsGenerated() bool {
 	return err == nil
 }
 
+// IsCommitHash check if requested version is a full commit hash (40-char hex)
+func (v RequestedVersion) IsCommitHash() bool {
+	if len(v) != 40 {
+		return false
+	}
+
+	for _, c := range v {
+		if (c < '0' || c > '9') && (c < 'a' || c > 'f') && (c < 'A' || c > 'F') {
+			return false
+		}
+	}
+
+	return true
+}
+
 // IsOmitted check if requested version is omitted
 func (v RequestedVersion) IsOmitted() bool {
 	return v == Omitted
 }
 
 func (g GeneratedVersionParts) GetVersionString() string {
-	return generatedVersionPrefix + generatedVersionSep + g.Datetime + generatedVersionSep + g.CommitHash
+	return g.CommitHash
 }

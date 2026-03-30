@@ -7,35 +7,43 @@ deps:
   - github.com/vervstack/Velez@220e0db758f9ce96d9b1f457234616284530622b
 generate:
 #  Server gen
-#  - proto_root: api/grpc
-#    inputs:
-#      - directory: "api/grpc"
-#    plugins:
-#      - name: go
-#        out: internal/pkg/api
-#
-#      - name: go-grpc
-#        out: internal/api/server
-#      - name: grpc-gateway
-#        out: internal/api/server
-#
-#      - name: grpc-gateway-ts
-#        out: internal/pkg/web/@vervstack/matreshka
+  - proto_root: api/grpc
+    inputs:
+      - directory: "api/grpc"
+    plugins:
+      - name: go
+        out: internal/api/server
+        opts:
+          paths: source_relative
+      - name: go-grpc
+        out: internal/api/server
+        opts:
+          paths: source_relative
+
+      - name: grpc-gateway
+        out: internal/api/server
+        opts:
+          paths: source_relative
+
+      - name: grpc-gateway-ts
+        out: internal/pkg/web/@vervstack/matreshka
 
 #  Clients gen
   - inputs:
       - git_repo:
-          url: github.com/vervstack/Matreshka@v1.0.95
+          url: github.com/vervstack/Matreshka
           sub_directory: api/grpc
+      - git_repo:
+          url: github.com/vervstack/Velez
     plugins:
       - name: go
         out: internal/api/clients
         opts:
 #          Generates code right in out directory
 #          paths: source_relative
-          module: go.vervstack.ru/matreshka/pkg
+          module: go.vervstack.ru
       - name: go-grpc
         out: internal/api/clients
         opts:
 #          paths: source_relative
-          module: go.vervstack.ru/matreshka/pkg
+          module: go.vervstack.ru

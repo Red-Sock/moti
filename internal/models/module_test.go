@@ -132,6 +132,42 @@ func Test_RequestedVersion_IsGenerated(t *testing.T) {
 	}
 }
 
+func Test_RequestedVersion_IsCommitHash(t *testing.T) {
+	tests := map[string]struct {
+		requestedVersion RequestedVersion
+		expectedResult   bool
+	}{
+		"not commit hash, simple tag": {
+			requestedVersion: RequestedVersion("v1.2.3"),
+			expectedResult:   false,
+		},
+		"not commit hash, pseudo-version": {
+			requestedVersion: "v0.0.0-20240222234643-814bf88cf225",
+			expectedResult:   false,
+		},
+		"is commit hash": {
+			requestedVersion: RequestedVersion("220e0db758f9ce96d9b1f457234616284530622b"),
+			expectedResult:   true,
+		},
+		"too short hash": {
+			requestedVersion: RequestedVersion("220e0db"),
+			expectedResult:   false,
+		},
+		"invalid characters": {
+			requestedVersion: RequestedVersion("220e0db758f9ce96d9b1f457234616284530622g"),
+			expectedResult:   false,
+		},
+	}
+
+	for name, tc := range tests {
+		name, tc := name, tc
+		t.Run(name, func(t *testing.T) {
+			result := tc.requestedVersion.IsCommitHash()
+			require.Equal(t, tc.expectedResult, result)
+		})
+	}
+}
+
 func Test_RequestedVersion_IsOmitted(t *testing.T) {
 	tests := map[string]struct {
 		requestedVersion RequestedVersion

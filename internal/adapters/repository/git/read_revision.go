@@ -27,6 +27,11 @@ func (r *gitRepo) ReadRevision(ctx context.Context, requestedVersion models.Requ
 		if err != nil {
 			return models.Revision{}, rerrors.Wrap(err, "r.readRevisionByGeneratedVersion")
 		}
+	case requestedVersion.IsCommitHash():
+		revParts, err = r.readRevisionByCommitHash(ctx, requestedVersion)
+		if err != nil {
+			return models.Revision{}, rerrors.Wrap(err, "r.readRevisionByCommitHash")
+		}
 	case requestedVersion.IsOmitted():
 		revParts, err = r.readRevisionForLatestCommit(ctx)
 		if err != nil {
@@ -228,4 +233,50 @@ func (r *gitRepo) readRevisionByGeneratedVersion(
 	}
 
 	return parts, nil
+}
+
+func (r *gitRepo) readRevisionByCommitHash(
+	ctx context.Context, requestedVersion models.RequestedVersion) (revisionParts, error) {
+	commitHash := string(requestedVersion)
+
+	_, err := r.console.RunCmd(
+		ctx, r.cacheDir,
+		"git",
+		"fetch", "-f",
+		"origin",
+		"--depth=1",
+		commitHash,
+	)
+	if err != nil {
+		return revisionParts{}, models.ErrVersionNotFound
+	}
+
+	// try to get git tag for this commit
+	version, err := r.getTagForCommit(ctx, commitHash)
+	if err != nil {
+		return revisionParts{}, rerrors.Wrap(err, "getTagForCommit")
+	}
+
+	if version != "" {
+		return revisionParts{
+			CommitHash: commitHash,
+			Version:    version,
+		}, nil
+	}
+
+	// get commit's datetime
+	commitDatetime, err := r.getCommitDatetime(ctx, commitHash)
+	if err != nil {
+		return revisionParts{}, rerrors.Wrap(err, "getCommitDatetime")
+	}
+
+	generatedVersion := models.GeneratedVersionParts{
+		Datetime:   commitDatetime,
+		CommitHash: commitHash,
+	}
+
+	return revisionParts{
+		CommitHash: commitHash,
+		Version:    generatedVersion.GetVersionString(),
+	}, nil
 }
