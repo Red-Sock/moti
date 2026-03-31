@@ -1,6 +1,6 @@
 package fs
 
-//go:generate minimock -i IWalker -o ../../mocks -g -s "_mock.go"
+//go:generate minimock -i IWalker -o ../mocks -g -s "_mock.go"
 type IWalker interface {
 	WalkDir(root string, callback func(path string, err error) error) error
 }

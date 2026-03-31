@@ -1,7 +1,6 @@
 package models
 
 import (
-	"errors"
 	"strings"
 )
 
@@ -18,8 +17,6 @@ type (
 	// RequestedVersion for installing
 	RequestedVersion string
 )
-
-var ErrRequestedVersionNotGenerated = errors.New("requested version is not generated")
 
 // Module contain requested dependency name and its version
 type Module struct {
@@ -45,22 +42,6 @@ func NewModule(dependency string) Module {
 		Name:    name,
 		Version: version,
 	}
-}
-
-// GetParts returns GeneratedVersionParts if RequestedVersion is a commit hash
-// if RequestedVersion is not a commit hash return error
-func (v RequestedVersion) GetParts() (GeneratedVersionParts, error) {
-	if v.IsHex() {
-		return GeneratedVersionParts{
-			CommitHash: string(v),
-		}, nil
-	}
-
-	return GeneratedVersionParts{}, ErrRequestedVersionNotGenerated
-}
-
-func (v RequestedVersion) GetVersionString() string {
-	return string(v)
 }
 
 // IsGenerated check if requested version is a commit hash

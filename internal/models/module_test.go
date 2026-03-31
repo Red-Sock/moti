@@ -36,67 +36,6 @@ func Test_NewModule(t *testing.T) {
 	}
 }
 
-func Test_RequestedVersion_GetParts(t *testing.T) {
-	tests := map[string]struct {
-		requestedVersion RequestedVersion
-		expectedResult   GeneratedVersionParts
-		expectedError    bool
-	}{
-		"not generated, simple tag": {
-			requestedVersion: RequestedVersion("v1.2.3"),
-			expectedResult:   GeneratedVersionParts{},
-			expectedError:    true,
-		},
-		"not generated, tag with no `v` prefix": {
-			requestedVersion: RequestedVersion("some_tag"),
-			expectedResult:   GeneratedVersionParts{},
-			expectedError:    true,
-		},
-		"not generated, with `-`": {
-			requestedVersion: RequestedVersion("v1.2.3-rc"),
-			expectedResult:   GeneratedVersionParts{},
-			expectedError:    true,
-		},
-		"not generated, with several `-`": {
-			requestedVersion: RequestedVersion("v1.2.3-rc-111222"),
-			expectedResult:   GeneratedVersionParts{},
-			expectedError:    true,
-		},
-		"Use Omitted": {
-			requestedVersion: Omitted,
-			expectedResult:   GeneratedVersionParts{},
-			expectedError:    true,
-		},
-		"generated pseudo-version (no longer supported)": {
-			requestedVersion: "v0.0.0-20240222234643-814bf88cf225",
-			expectedResult:   GeneratedVersionParts{},
-			expectedError:    true,
-		},
-		"commit hash": {
-			requestedVersion: "220e0db758f9ce96d9b1f457234616284530622b",
-			expectedResult:   GeneratedVersionParts{CommitHash: "220e0db758f9ce96d9b1f457234616284530622b"},
-			expectedError:    false,
-		},
-	}
-
-	for name, tc := range tests {
-		name, testCase := name, tc
-		t.Run(name, func(t *testing.T) {
-			result, err := testCase.requestedVersion.GetParts()
-
-			require.Equal(t, testCase.expectedResult, result)
-
-			if testCase.expectedError {
-				require.ErrorIs(t, err, ErrRequestedVersionNotGenerated)
-
-				return
-			}
-
-			require.NoError(t, err)
-		})
-	}
-}
-
 func Test_RequestedVersion_IsGenerated(t *testing.T) {
 	tests := map[string]struct {
 		requestedVersion RequestedVersion

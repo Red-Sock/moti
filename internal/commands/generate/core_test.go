@@ -45,9 +45,10 @@ func TestGenerate(t *testing.T) {
 	mLockFile.ReadMock.Return(models.LockFileInfo{Version: "v1.0.0"}, nil)
 
 	mWalker := mocks.NewIWalkerMock(t)
-	mWalker.WalkDirMock.Set(func(root string, path string, callback func(path string, err error) error) error {
-		return callback("test/file.proto", nil)
-	})
+	mWalker.WalkDirMock.Set(
+		func(root string, callback func(path string, err error) error) error {
+			return callback("test/file.proto", nil)
+		})
 
 	c := &Core{
 		Env: commands.Env{
@@ -85,7 +86,7 @@ func TestGenerate_MultipleInputs(t *testing.T) {
 	mStorage := mocks.NewIStorageMock(t)
 	mLockFile := mocks.NewILockFileMock(t)
 	mWalker := mocks.NewIWalkerMock(t)
-	mWalker.WalkDirMock.Set(func(root string, path string, callback func(path string, err error) error) error {
+	mWalker.WalkDirMock.Set(func(root string, callback func(path string, err error) error) error {
 		return callback(root+"/file.proto", nil)
 	})
 

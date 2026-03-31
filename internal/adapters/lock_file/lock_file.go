@@ -39,8 +39,6 @@ type ILockFile interface {
 	Write(
 		moduleName string, revisionVersion string, installedPackageHash models.ModuleHash,
 	) error
-	IsEmpty() bool
-	DepsIter() iter.Seq[models.LockFileInfo]
 }
 
 func New(dirWalker DirWalker) (*LockFile, error) {
@@ -132,24 +130,4 @@ func (l *LockFile) Write(moduleName string, revisionVersion string, installedPac
 	}
 
 	return nil
-}
-
-func (l *LockFile) DepsIter() iter.Seq[models.LockFileInfo] {
-	return func(yield func(models.LockFileInfo) bool) {
-		for moduleName, fileInf := range l.cache {
-			lockFileInfo := models.LockFileInfo{
-				Name:    moduleName,
-				Version: fileInf.version,
-				Hash:    models.ModuleHash(fileInf.hash),
-			}
-			if !yield(lockFileInfo) {
-				return
-			}
-		}
-	}
-}
-
-// IsEmpty check if lock file doesn't have any deps
-func (l *LockFile) IsEmpty() bool {
-	return len(l.cache) == 0
 }
