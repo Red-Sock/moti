@@ -1,8 +1,10 @@
 package fs
 
 import (
+	"io"
 	"io/fs"
 	"os"
+	"path/filepath"
 
 	"go.redsock.ru/rerrors"
 )
@@ -35,4 +37,15 @@ func (w *DirWalker) WalkDir(callback func(path string, err error) error) error {
 	}
 
 	return nil
+}
+
+func (a *DirWalker) Create(name string) (io.WriteCloser, error) {
+	path := filepath.Join(a.rootDir, name)
+
+	f, err := os.Create(path)
+	if err != nil {
+		return nil, rerrors.Wrap(err)
+	}
+
+	return f, nil
 }

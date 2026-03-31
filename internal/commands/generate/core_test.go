@@ -1,8 +1,6 @@
 package generate
 
 import (
-	"context"
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -17,29 +15,22 @@ func TestGenerate(t *testing.T) {
 	ctx := t.Context()
 
 	mConsole := mocks.NewConsoleMock(t)
-	mConsole.RunCmdMock.Set(func(ctx context.Context, dir string, command string, commandParams ...string) (string, error) {
-		require.Equal(t, "protoc", command)
-		// Verify some args
-		foundI := false
-		foundProto := false
-		for _, arg := range commandParams {
-			if arg == "-I ." {
-				foundI = true
-			}
-			if strings.Contains(arg, "test/*.proto") {
-				foundProto = true
-			}
-		}
-		require.True(t, foundI)
-		require.True(t, foundProto)
-		return "", nil
-	})
+
+	expectedParams := []string{
+		"-I test",
+		"test/test/file.proto",
+	}
+
+	mConsole.RunCmdMock.Expect(ctx, ".", protocBin, expectedParams...).
+		Return("", nil)
 
 	mStorage := mocks.NewIStorageMock(t)
+
 	mStorage.IsModuleInstalledMock.Return(true, nil)
-	mStorage.GetInstallDirMock.Set(func(moduleName string, revisionVersion string) string {
-		return "/tmp/mod/" + moduleName
-	})
+	mStorage.GetInstallDirMock.Set(
+		func(moduleName string, revisionVersion string) string {
+			return "/tmp/mod/" + moduleName
+		})
 
 	mLockFile := mocks.NewILockFileMock(t)
 	mLockFile.ReadMock.Return(models.LockFileInfo{Version: "v1.0.0"}, nil)
@@ -76,12 +67,24 @@ func TestGenerate(t *testing.T) {
 func TestGenerate_MultipleInputs(t *testing.T) {
 	ctx := t.Context()
 
-	var commandsRun []string
+	expectedParams1 := []string{
+		"-I test1",
+		"test1/test1/file.proto",
+	}
+
+	expectedParams2 := []string{
+		"-I test2",
+		"test2/test2/file.proto",
+	}
+
 	mConsole := mocks.NewConsoleMock(t)
-	mConsole.RunCmdMock.Set(func(ctx context.Context, dir string, command string, commandParams ...string) (string, error) {
-		commandsRun = append(commandsRun, command+" "+strings.Join(commandParams, " "))
-		return "", nil
-	})
+	mConsole.
+		RunCmdMock.
+		When(ctx, ".", protocBin, expectedParams1...).
+		Then("", nil).
+		RunCmdMock.
+		When(ctx, ".", protocBin, expectedParams2...).
+		Then("", nil)
 
 	mStorage := mocks.NewIStorageMock(t)
 	mLockFile := mocks.NewILockFileMock(t)
@@ -112,7 +115,4 @@ func TestGenerate_MultipleInputs(t *testing.T) {
 
 	err := c.Generate(ctx)
 	require.NoError(t, err)
-	require.Len(t, commandsRun, 2)
-	require.Contains(t, commandsRun[0], "test1/*.proto")
-	require.Contains(t, commandsRun[1], "test2/*.proto")
 }

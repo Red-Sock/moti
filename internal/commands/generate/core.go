@@ -29,8 +29,10 @@ func (c *Core) Generate(ctx context.Context) error {
 		if err != nil {
 			return rerrors.Wrap(err, "mkdir for plugins failed")
 		}
+
 		for _, input := range genCfg.Inputs {
 			root := c.getFirstInput(input)
+
 			query := ProtocQuery{
 				Imports: []string{
 					root,

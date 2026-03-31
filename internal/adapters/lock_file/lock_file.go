@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"io"
-	"iter"
 	"os"
 	"sort"
 	"strings"
@@ -12,7 +11,7 @@ import (
 	"github.com/rs/zerolog/log"
 	"go.redsock.ru/rerrors"
 
-	"go.redsock.ru/moti/internal/flags"
+	"go.redsock.ru/moti/internal/config"
 	"go.redsock.ru/moti/internal/fs"
 	"go.redsock.ru/moti/internal/models"
 )
@@ -48,7 +47,7 @@ func New(dirWalker DirWalker) (*LockFile, error) {
 		cache:     cache,
 	}
 
-	lockFileOpened, err := dirWalker.Open(flags.LockFileName)
+	lockFileOpened, err := dirWalker.Open(config.LockFileName)
 	if err != nil {
 		if !rerrors.Is(err, os.ErrNotExist) {
 			return nil, rerrors.Wrap(err)
@@ -105,7 +104,7 @@ func (l *LockFile) Read(moduleName string) (models.LockFileInfo, error) {
 }
 
 func (l *LockFile) Write(moduleName string, revisionVersion string, installedPackageHash models.ModuleHash) error {
-	lockFile, err := l.dirWalker.Create(flags.LockFileName)
+	lockFile, err := l.dirWalker.Create(config.LockFileName)
 	if err != nil {
 		return fmt.Errorf("l.dirWalker.Create: %w", err)
 	}

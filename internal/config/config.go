@@ -8,8 +8,6 @@ import (
 	"github.com/spf13/cobra"
 	"go.redsock.ru/rerrors"
 	"gopkg.in/yaml.v3"
-
-	"go.redsock.ru/moti/internal/flags"
 )
 
 type Config struct {
@@ -53,7 +51,7 @@ func Read(filepath string) (Config, error) {
 }
 
 func ReadOrDie(cmd *cobra.Command) Config {
-	configPath, _ := cmd.Flags().GetString(flags.ConfigFlag)
+	configPath, _ := cmd.Flags().GetString(ConfigFlag)
 
 	cfg, err := Read(configPath)
 	if err != nil {

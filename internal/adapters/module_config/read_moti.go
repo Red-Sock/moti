@@ -10,7 +10,7 @@ import (
 	"gopkg.in/yaml.v3"
 
 	"go.redsock.ru/moti/internal/adapters/repository"
-	"go.redsock.ru/moti/internal/flags"
+	"go.redsock.ru/moti/internal/config"
 	"go.redsock.ru/moti/internal/models"
 )
 
@@ -19,7 +19,7 @@ type motiConfig struct {
 }
 
 func readMoti(ctx context.Context, repo repository.Repo, revision models.Revision) ([]models.Module, error) {
-	content, err := repo.ReadFile(ctx, revision, flags.DefaultConfigFilePath)
+	content, err := repo.ReadFile(ctx, revision, config.DefaultConfigFilePath)
 	if err != nil {
 		if errors.Is(err, models.ErrFileNotFound) {
 			log.Debug().

@@ -10,7 +10,7 @@ import (
 	"go.redsock.ru/moti/internal/commands"
 	"go.redsock.ru/moti/internal/commands/generate"
 	"go.redsock.ru/moti/internal/commands/install"
-	"go.redsock.ru/moti/internal/flags"
+	"go.redsock.ru/moti/internal/config"
 	"go.redsock.ru/moti/internal/version"
 )
 
@@ -25,7 +25,7 @@ func main() {
 	}
 
 	rootCmd.PersistentFlags().
-		String(flags.ConfigFlag, flags.DefaultConfigFilePath,
+		String(config.ConfigFlag, config.DefaultConfigFilePath,
 			"Specify the absolute or relative path to the configuration file for setting up the application.")
 
 	addCommands(rootCmd,
