@@ -5,4 +5,7 @@ const (
 	LockFileName          = "moti.lock"
 
 	ConfigFlag = "cfg"
+
+	GOBINPrefix = "GOBIN="
+	PATHPrefix  = "PATH="
 )

@@ -27,13 +27,19 @@ func (bash) RunCmd(ctx context.Context, dir string, command string, commandParam
 
 	err := cmd.Run()
 	if err != nil {
-		return "", &RunError{
+		e := &RunError{
 			Command:       command,
 			CommandParams: commandParams,
 			Dir:           dir,
 			Err:           err,
 			Stderr:        stderr.String(),
 		}
+
+		if strings.Contains(e.Stderr, "command not found") {
+			return "", ErrNotFound
+		}
+
+		return "", e
 	}
 
 	return stdout.String(), nil

@@ -3,6 +3,7 @@ package config
 import (
 	"io"
 	"os"
+	"path"
 
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
@@ -64,4 +65,20 @@ func ReadOrDie(cmd *cobra.Command) Config {
 	}
 
 	return cfg
+}
+
+func (c Config) BuildPATH(workDir string) string {
+	if c.Binaries.BinDir == "" {
+		return ""
+	}
+
+	return PATHPrefix + path.Join(workDir, c.Binaries.BinDir) + ":$PATH"
+}
+
+func (c Config) BuildGOBIN(workDir string) string {
+	if c.Binaries.BinDir == "" {
+		return ""
+	}
+
+	return GOBINPrefix + path.Join(workDir, c.Binaries.BinDir)
 }

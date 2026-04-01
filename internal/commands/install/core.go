@@ -7,7 +7,9 @@ import (
 
 	"github.com/rs/zerolog/log"
 	"go.redsock.ru/rerrors"
+	"go.redsock.ru/toolbox"
 
+	"go.redsock.ru/moti/internal/adapters/console"
 	"go.redsock.ru/moti/internal/adapters/repository"
 	"go.redsock.ru/moti/internal/adapters/repository/git"
 	"go.redsock.ru/moti/internal/commands"
@@ -36,9 +38,30 @@ func (c *Core) Install(ctx context.Context) error {
 		c.RepoFactory = &gitRepoFactory{}
 	}
 
-	for _, goBin := range c.MotiConfig.Binaries.Install {
-		if goBin.Go.Module != "" {
-			err := c.installGoBin(ctx, goBin.Go)
+	for _, installBin := range c.MotiConfig.Binaries.Install {
+		if installBin.Go.Module != "" {
+			module := models.NewModule(installBin.Go.Module)
+			version := toolbox.Coalesce(string(module.Version), "latest")
+
+			isInstalled, err := c.isGoBinaryVersionInstalled(ctx, installBin.Go, module, version)
+			if err != nil {
+				return rerrors.Wrap(err, "isGoBinaryVersionInstalled")
+			}
+
+			if isInstalled {
+				log.Info().
+					Str("module", installBin.Go.Module).
+					Str("version", version).
+					Msg("module already installed")
+				continue
+			}
+
+			log.Info().
+				Str("module", installBin.Go.Module).
+				Str("version", version).
+				Msg("module is not installed. Installing...")
+
+			err = c.installGoBin(ctx, installBin.Go, module, version)
 			if err != nil {
 				return rerrors.Wrap(err, "error installing go binary")
 			}
@@ -136,14 +159,10 @@ func (c *Core) fetchAndReadRevision(ctx context.Context, requestedModule models.
 	return repo, revision, nil
 }
 
-func (c *Core) installGoBin(ctx context.Context, goBin config.GoBin) error {
-	log.Info().Str("module", goBin.Module).Msg("Installing go binary")
-
-	module := models.NewModule(goBin.Module)
-	version := string(module.Version)
-	if version == "" {
-		version = "latest"
-	}
+func (c *Core) installGoBin(ctx context.Context, goBin config.GoBin, module models.Module, version string) error {
+	log.Info().
+		Str("module", goBin.Module).
+		Msg("Installing go binary")
 
 	command := "go install " + module.Name + "@" + version
 
@@ -156,23 +175,33 @@ func (c *Core) installGoBin(ctx context.Context, goBin config.GoBin) error {
 		return rerrors.Wrap(err, "error executing go install")
 	}
 
-	if goBin.VersionCheckArgs != "" {
-		binaryName := module.Name[strings.LastIndex(module.Name, "/")+1:]
-		if c.MotiConfig.Binaries.BinDir != "" {
-			binaryName = "./" + binaryName
-		}
+	return nil
+}
 
-		output, err := c.Console.RunCmd(ctx, c.WorkDir, binaryName+" "+goBin.VersionCheckArgs)
-		if err != nil {
-			return rerrors.Wrap(err, "error checking binary version")
-		}
+func (c *Core) isGoBinaryVersionInstalled(ctx context.Context,
+	goBin config.GoBin,
+	module models.Module,
+	expectedVersion string,
+) (bool, error) {
 
-		if version != "latest" && !strings.Contains(output, version) {
-			return rerrors.New("version check failed: output " + output + " does not contain version " + version)
+	gobin := c.MotiConfig.BuildGOBIN(c.Env.WorkDir)[len(config.GOBINPrefix):]
+	binaryName := gobin + "/" + module.Name[strings.LastIndex(module.Name, "/")+1:]
+
+	versionCheckArgs := toolbox.Coalesce(goBin.VersionCheckArgs, "")
+
+	output, err := c.Console.RunCmd(ctx, c.WorkDir, binaryName, versionCheckArgs)
+	if err != nil {
+		if errors.Is(err, console.ErrNotFound) {
+			return false, nil
 		}
+		return false, rerrors.Wrap(err, "error checking binary version")
 	}
 
-	return nil
+	if expectedVersion != "latest" && !strings.Contains(output, expectedVersion) {
+		return false, rerrors.New("version check failed: output " + output + " does not contain version " + expectedVersion)
+	}
+
+	return true, nil
 }
 
 func (c *Core) installDependencies(ctx context.Context, dependencies []models.Module) error {

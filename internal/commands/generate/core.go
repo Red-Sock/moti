@@ -67,9 +67,16 @@ func (c *Core) Generate(ctx context.Context) error {
 
 			command, args := query.Build()
 
-			log.Info().
-				Msg(command + " " + strings.Join(args, " \\\n           "))
+			customPATH := c.Env.MotiConfig.BuildPATH(c.Env.WorkDir)
 
+			customPATHLog := customPATH
+			if customPATH != "" {
+				customPATHLog += "\n\t"
+			}
+			log.Info().
+				Msg(customPATHLog + command + " " + strings.Join(args, " \\\n           "))
+
+			command = customPATH + " " + command
 			_, err = c.Env.Console.RunCmd(ctx, c.Env.WorkDir, command, args...)
 			if err != nil {
 				return rerrors.Wrap(err, "adapters.RunCmd")
