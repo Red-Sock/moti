@@ -12,6 +12,36 @@ deps:
   #  or commit hash
   - github.com/vervstack/Velez@220e0db758f9ce96d9b1f457234616284530622b
 #  And use it in codegen below
+
+# This section is responsible for maintaining project binaries version same
+#  across different developer environments
+binaries:
+#  In case you want to specify a local directory to hold all binaries
+#     useful for different versions in different projects
+#     empty by default and use global folders (e.g. `GO_BIN` for `go install `)
+#  if not empty plugins during generation will be using a full path to this directory
+#     e.g.
+#           You have `protoc-gen-go-grpc` installed globally
+#       and
+#           `protoc-gen-go` installed in the `bin` folder inside the repository
+#  moti will use global bin located at $GO_BIN for protoc-gen-go-grpc
+#     and local bin for protoc-gen-go at `bin` folder
+# this is achieved via setting bin_dir in PATH before global PATH variable
+  bin_dir: "bin"
+# By default, only plugins with `protoc-gen-` prefix are allowed to be installed.
+#  settings allow_custom to true - allow you to install any binary
+  allow_custom: true
+  install:
+    - go:
+#        module that will be installed with `go install` with a specific version
+#        or with the latest if no version is passed
+        module: google.golang.org/protobuf/cmd/protoc-gen-go@v1.36.11
+#        validation argument to verify version
+#        Basically calls `protoc-gen-go --version` and checks that the output string contains a version substring
+#             (in this case it's v1.36.11)
+#        if empty - checks that binary is installed without checking version
+        version_check_args: --version
+
 generate:
   #  Server generation looks like this.
   #  It is better to separate local proto file gen from external

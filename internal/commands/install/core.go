@@ -3,6 +3,7 @@ package install
 import (
 	"context"
 	"errors"
+	"strings"
 
 	"github.com/rs/zerolog/log"
 	"go.redsock.ru/rerrors"
@@ -10,6 +11,7 @@ import (
 	"go.redsock.ru/moti/internal/adapters/repository"
 	"go.redsock.ru/moti/internal/adapters/repository/git"
 	"go.redsock.ru/moti/internal/commands"
+	"go.redsock.ru/moti/internal/config"
 	"go.redsock.ru/moti/internal/models"
 )
 
@@ -33,6 +35,16 @@ func (c *Core) Install(ctx context.Context) error {
 	if c.RepoFactory == nil {
 		c.RepoFactory = &gitRepoFactory{}
 	}
+
+	for _, goBin := range c.MotiConfig.Binaries.Install {
+		if goBin.Go.Module != "" {
+			err := c.installGoBin(ctx, goBin.Go)
+			if err != nil {
+				return rerrors.Wrap(err, "error installing go binary")
+			}
+		}
+	}
+
 	for _, dep := range c.MotiConfig.Deps {
 		module := models.NewModule(dep)
 
@@ -122,6 +134,45 @@ func (c *Core) fetchAndReadRevision(ctx context.Context, requestedModule models.
 	}
 
 	return repo, revision, nil
+}
+
+func (c *Core) installGoBin(ctx context.Context, goBin config.GoBin) error {
+	log.Info().Str("module", goBin.Module).Msg("Installing go binary")
+
+	module := models.NewModule(goBin.Module)
+	version := string(module.Version)
+	if version == "" {
+		version = "latest"
+	}
+
+	command := "go install " + module.Name + "@" + version
+
+	if c.MotiConfig.Binaries.BinDir != "" {
+		command = "GOBIN=" + c.MotiConfig.Binaries.BinDir + " " + command
+	}
+
+	_, err := c.Console.RunCmd(ctx, c.WorkDir, command)
+	if err != nil {
+		return rerrors.Wrap(err, "error executing go install")
+	}
+
+	if goBin.VersionCheckArgs != "" {
+		binaryName := module.Name[strings.LastIndex(module.Name, "/")+1:]
+		if c.MotiConfig.Binaries.BinDir != "" {
+			binaryName = "./" + binaryName
+		}
+
+		output, err := c.Console.RunCmd(ctx, c.WorkDir, binaryName+" "+goBin.VersionCheckArgs)
+		if err != nil {
+			return rerrors.Wrap(err, "error checking binary version")
+		}
+
+		if version != "latest" && !strings.Contains(output, version) {
+			return rerrors.New("version check failed: output " + output + " does not contain version " + version)
+		}
+	}
+
+	return nil
 }
 
 func (c *Core) installDependencies(ctx context.Context, dependencies []models.Module) error {

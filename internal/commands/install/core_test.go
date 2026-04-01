@@ -11,6 +11,38 @@ import (
 	"go.redsock.ru/moti/internal/models"
 )
 
+func TestInstall_Binaries(t *testing.T) {
+	ctx := t.Context()
+
+	mConsole := mocks.NewConsoleMock(t)
+	mConsole.RunCmdMock.When(ctx, "/tmp", "go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.36.11").Then("installed", nil)
+	mConsole.RunCmdMock.When(ctx, "/tmp", "protoc-gen-go --version").Then("v1.36.11", nil)
+
+	c := &Core{
+		Env: commands.Env{
+			WorkDir: "/tmp",
+			MotiConfig: config.Config{
+				Binaries: config.Binaries{
+					Install: []struct {
+						Go config.GoBin `json:"go" yaml:"go"`
+					}{
+						{
+							Go: config.GoBin{
+								Module:           "google.golang.org/protobuf/cmd/protoc-gen-go@v1.36.11",
+								VersionCheckArgs: "--version",
+							},
+						},
+					},
+				},
+			},
+			Console: mConsole,
+		},
+	}
+
+	err := c.Install(ctx)
+	require.NoError(t, err)
+}
+
 func TestInstall(t *testing.T) {
 	ctx := t.Context()
 
@@ -26,6 +58,8 @@ func TestInstall(t *testing.T) {
 	})
 	mStorage.CreateCacheDownloadDirMock.Return(nil)
 	mStorage.InstallMock.Return("some-hash", nil)
+
+	mConsole := mocks.NewConsoleMock(t)
 
 	mModuleConfig := mocks.NewIModuleConfigMock(t)
 	mModuleConfig.ReadFromRepoMock.Return(models.ModuleConfig{}, nil)
@@ -54,6 +88,7 @@ func TestInstall(t *testing.T) {
 			Storage:      mStorage,
 			ModuleConfig: mModuleConfig,
 			LockFile:     mLockFile,
+			Console:      mConsole,
 		},
 		RepoFactory: mRepoFactory,
 	}
