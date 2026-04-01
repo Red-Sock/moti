@@ -19,7 +19,7 @@ go install go.redsock.ru/moti@latest
 
 1. Initialize a `moti.yaml` file in your project root.
 2. Define your dependencies and generation rules.
-3. Run `moti install` to fetch dependencies.
+3. Run `moti install` to fetch dependencies and tools.
 4. Run `moti generate` to generate code.
 
 ## Configuration (moti.yaml)
@@ -29,6 +29,22 @@ The `moti.yaml` file is the heart of `moti`. Here's a breakdown based on a full 
 ```yaml
 # Local directory where external proto dependencies will be cached
 cache_path: proto_modules
+
+# Binary installation configuration
+binaries:
+  # Directory where binaries will be installed
+  bin_dir: bin
+  # List of go packages to install as binaries
+  install:
+    - go:
+        # go-plugin for protoc
+        module: google.golang.org/protobuf/cmd/protoc-gen-go@v1.36.5
+        # argument to binary for version checking
+        version_check_args: --version
+    - go:
+        # go-grpc plugin for protoc
+        module: google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.5.1
+        version_check_args: --version
 
 # External git repositories to download as dependencies
 deps:
@@ -82,7 +98,9 @@ generate:
 ## Commands
 
 ### install
-Fetches and caches all dependencies defined in the `deps` section of `moti.yaml`. It also manages a `moti.lock` file to ensure consistent versions across different environments.
+Fetches and caches all dependencies defined in the `deps` section and
+installs binaries defined in `binaries.install` of `moti.yaml`. 
+It also manages a `moti.lock` file to ensure consistent versions across different environments.
 
 ```bash
 moti install
@@ -119,8 +137,8 @@ We are constantly working to improve `moti`. Here are some features planned for 
 
 - [ ] **Adhoc Operations**: Run go mod tidy, npm run generate after or before protoc generation (e.g. useful for go-import)
   - [ ] with "AllowToFail" flag
-- [ ] **Binary Installment**: Automated installation of `protoc-gen-*` plugins of specific versions
-  - [ ] Generic like `go install ...` on `npm install ...`
+- [x] **Binary Installment**: Automated installation of `protoc-gen-*` plugins of specific versions
+  - [x] Generic like `go install ...`
   - [ ] Platform specific for `choco`, `brew`, `apt`
 - [ ] **moti Registry**: A central registry for easier discovery and sharing of proto modules and watching over backward compatibility and deprecated contracts
   - [ ] Github actions for pushing to registry
