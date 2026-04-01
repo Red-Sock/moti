@@ -6,8 +6,8 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 
+	"go.redsock.ru/moti/internal/adapters/fs"
 	"go.redsock.ru/moti/internal/commands"
-	"go.redsock.ru/moti/internal/fs"
 )
 
 type Command struct{}

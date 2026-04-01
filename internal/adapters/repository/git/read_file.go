@@ -6,12 +6,12 @@ import (
 	"go.redsock.ru/moti/internal/models"
 )
 
-func (r *gitRepo) ReadFile(ctx context.Context, revision models.Revision, fileName string) (string, error) {
+func (r *GitRepo) ReadFile(ctx context.Context, revision models.Revision, fileName string) (string, error) {
 	// g cat-file -p 8074ae2f42417345ef103d83fb62e4245010715d:buf.work.yaml
 	fileRequest := revision.CommitHash + ":" + fileName
 
-	content, err := r.console.RunCmd(
-		ctx, r.cacheDir,
+	content, err := r.Console.RunCmd(
+		ctx, r.CacheDir,
 		"git", "cat-file", "-p",
 		fileRequest,
 	)

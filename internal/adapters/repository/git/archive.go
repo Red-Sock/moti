@@ -9,7 +9,7 @@ import (
 	"go.redsock.ru/moti/internal/models"
 )
 
-func (r *gitRepo) Archive(
+func (r *GitRepo) Archive(
 	ctx context.Context, revision models.Revision, cacheDownloadPaths models.CacheDownloadPaths) error {
 	absPath, err := filepath.Abs(cacheDownloadPaths.ArchiveFile)
 	if err != nil {
@@ -24,7 +24,7 @@ func (r *gitRepo) Archive(
 		"*.proto",
 	}
 
-	_, err = r.console.RunCmd(ctx, r.cacheDir, "git", params...)
+	_, err = r.Console.RunCmd(ctx, r.CacheDir, "git", params...)
 	if err != nil {
 		return rerrors.Wrap(err, "utils.RunCmd")
 	}

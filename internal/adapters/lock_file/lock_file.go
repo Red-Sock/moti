@@ -11,8 +11,8 @@ import (
 	"github.com/rs/zerolog/log"
 	"go.redsock.ru/rerrors"
 
+	"go.redsock.ru/moti/internal/adapters/fs"
 	"go.redsock.ru/moti/internal/config"
-	"go.redsock.ru/moti/internal/fs"
 	"go.redsock.ru/moti/internal/models"
 )
 

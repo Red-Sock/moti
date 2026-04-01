@@ -16,7 +16,7 @@ type revisionParts struct {
 	Version    string
 }
 
-func (r *gitRepo) ReadRevision(ctx context.Context, requestedVersion models.RequestedVersion) (models.Revision, error) {
+func (r *GitRepo) ReadRevision(ctx context.Context, requestedVersion models.RequestedVersion) (models.Revision, error) {
 	var revParts revisionParts
 
 	var err error
@@ -53,11 +53,11 @@ func (r *gitRepo) ReadRevision(ctx context.Context, requestedVersion models.Requ
 	return revision, nil
 }
 
-func (r *gitRepo) readRevisionByGitTagVersion(
+func (r *GitRepo) readRevisionByGitTagVersion(
 	ctx context.Context, requestedVersion models.RequestedVersion) (revisionParts, error) {
 	gitTagVersion := string(requestedVersion)
 
-	res, err := r.console.RunCmd(ctx, r.cacheDir, "git", "ls-remote", "origin", gitTagVersion)
+	res, err := r.Console.RunCmd(ctx, r.CacheDir, "git", "ls-remote", "origin", gitTagVersion)
 	if err != nil {
 		return revisionParts{}, models.ErrVersionNotFound
 	}
@@ -86,9 +86,9 @@ func (r *gitRepo) readRevisionByGitTagVersion(
 	return parts, nil
 }
 
-func (r *gitRepo) readRevisionForLatestCommit(ctx context.Context) (revisionParts, error) {
-	headInfo, err := r.console.RunCmd(
-		ctx, r.cacheDir,
+func (r *GitRepo) readRevisionForLatestCommit(ctx context.Context) (revisionParts, error) {
+	headInfo, err := r.Console.RunCmd(
+		ctx, r.CacheDir,
 		"git",
 		"ls-remote",
 		"origin",
@@ -134,8 +134,8 @@ func (r *gitRepo) readRevisionForLatestCommit(ctx context.Context) (revisionPart
 	}, nil
 }
 
-func (r *gitRepo) getTagForCommit(ctx context.Context, commitHash string) (string, error) {
-	tagInfo, err := r.console.RunCmd(ctx, r.cacheDir, "git", "ls-remote", "origin")
+func (r *GitRepo) getTagForCommit(ctx context.Context, commitHash string) (string, error) {
+	tagInfo, err := r.Console.RunCmd(ctx, r.CacheDir, "git", "ls-remote", "origin")
 	if err != nil {
 		return "", fmt.Errorf("adapters.RunCmd (ls-remote tagInfo): %w", err)
 	}
@@ -158,12 +158,12 @@ func (r *gitRepo) getTagForCommit(ctx context.Context, commitHash string) (strin
 	return "", nil
 }
 
-func (r *gitRepo) readRevisionByCommitHash(
+func (r *GitRepo) readRevisionByCommitHash(
 	ctx context.Context, requestedVersion models.RequestedVersion) (revisionParts, error) {
 	commitHash := string(requestedVersion)
 
-	_, err := r.console.RunCmd(
-		ctx, r.cacheDir,
+	_, err := r.Console.RunCmd(
+		ctx, r.CacheDir,
 		"git",
 		"fetch", "-f",
 		"origin",

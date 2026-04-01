@@ -14,16 +14,16 @@ import (
 	"go.redsock.ru/moti/internal/adapters/repository"
 )
 
-var _ repository.Repo = (*gitRepo)(nil)
+var _ repository.Repo = (*GitRepo)(nil)
 
-// gitRepo implements repository.Repo interface
-type gitRepo struct {
-	// remoteURL full repository remoteURL address with schema
-	remoteURL string
-	// cacheDir local cache directory for store repository
-	cacheDir string
-	// console for call external commands
-	console Console
+// GitRepo implements repository.Repo interface
+type GitRepo struct {
+	// RemoteURL full repository RemoteURL address with schema
+	RemoteURL string
+	// CacheDir local cache directory for store repository
+	CacheDir string
+	// Console for call external commands
+	Console Console
 }
 
 const (
@@ -37,37 +37,37 @@ const (
 // cmd/go/internal/modfetch/codehost/git.go:65 - create work dir
 // cmd/go/internal/modfetch/codehost/git.go:137 - git's struct
 
-// Console temporary interface for console commands, must be replaced from core.Console.
+// Console temporary interface for Console commands, must be replaced from core.Console.
 type Console interface {
 	RunCmd(ctx context.Context, dir string, command string, commandParams ...string) (string, error)
 }
 
-// New returns gitRepo instance
-// remote: full remoteURL address without schema
+// New returns GitRepo instance
+// remote: full RemoteURL address without schema
 func New(ctx context.Context, remote string, cacheDir string, console Console) (repository.Repo, error) {
-	repo := &gitRepo{
-		cacheDir: cacheDir,
-		console:  console,
+	repo := &GitRepo{
+		CacheDir: cacheDir,
+		Console:  console,
 	}
 
 	var err error
 
-	repo.remoteURL, err = GetRemote(ctx, remote)
+	repo.RemoteURL, err = GetRemote(ctx, remote)
 	if err != nil {
 		return nil, rerrors.Wrap(err)
 	}
 
-	_, err = os.Stat(filepath.Join(repo.cacheDir, "objects"))
+	_, err = os.Stat(filepath.Join(repo.CacheDir, "objects"))
 	if err == nil {
 		return repo, nil
 	}
 
-	_, err = repo.console.RunCmd(ctx, repo.cacheDir, "git", "init", "--bare")
+	_, err = repo.Console.RunCmd(ctx, repo.CacheDir, "git", "init", "--bare")
 	if err != nil {
 		return nil, rerrors.Wrap(err, "adapters.RunCmd (init): %w", err)
 	}
 
-	_, err = repo.console.RunCmd(ctx, repo.cacheDir, "git", "remote", "add", "origin", repo.remoteURL)
+	_, err = repo.Console.RunCmd(ctx, repo.CacheDir, "git", "remote", "add", "origin", repo.RemoteURL)
 	if err != nil {
 		return nil, rerrors.Wrap(err, "adapters.RunCmd (add origin)")
 	}
@@ -76,7 +76,9 @@ func New(ctx context.Context, remote string, cacheDir string, console Console) (
 }
 
 func GetRemote(ctx context.Context, remoteURL string) (string, error) {
-	remoteURL = "https://" + remoteURL
+	if !strings.HasPrefix(remoteURL, "http") {
+		remoteURL = "https://" + remoteURL
+	}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, remoteURL, nil)
 	if err != nil {

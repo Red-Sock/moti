@@ -6,3 +6,6 @@ lint:
 
 gen:
 	go generate ./...
+
+test:
+	go test ./...

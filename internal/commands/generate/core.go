@@ -11,10 +11,10 @@ import (
 	"go.redsock.ru/rerrors"
 	"go.redsock.ru/toolbox"
 
+	"go.redsock.ru/moti/internal/adapters/fs"
 	"go.redsock.ru/moti/internal/adapters/storage"
 	"go.redsock.ru/moti/internal/commands"
 	"go.redsock.ru/moti/internal/config"
-	"go.redsock.ru/moti/internal/fs"
 	"go.redsock.ru/moti/internal/models"
 )
 
