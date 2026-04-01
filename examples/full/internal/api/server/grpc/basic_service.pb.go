@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.36.11
 // 	protoc        v5.28.3
-// source: basic_service.proto
+// source: grpc/basic_service.proto
 
 package basic_example_api
 
@@ -30,7 +30,7 @@ type Hello struct {
 
 func (x *Hello) Reset() {
 	*x = Hello{}
-	mi := &file_basic_service_proto_msgTypes[0]
+	mi := &file_grpc_basic_service_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -42,7 +42,7 @@ func (x *Hello) String() string {
 func (*Hello) ProtoMessage() {}
 
 func (x *Hello) ProtoReflect() protoreflect.Message {
-	mi := &file_basic_service_proto_msgTypes[0]
+	mi := &file_grpc_basic_service_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -55,7 +55,7 @@ func (x *Hello) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Hello.ProtoReflect.Descriptor instead.
 func (*Hello) Descriptor() ([]byte, []int) {
-	return file_basic_service_proto_rawDescGZIP(), []int{0}
+	return file_grpc_basic_service_proto_rawDescGZIP(), []int{0}
 }
 
 type Hello_Request struct {
@@ -66,7 +66,7 @@ type Hello_Request struct {
 
 func (x *Hello_Request) Reset() {
 	*x = Hello_Request{}
-	mi := &file_basic_service_proto_msgTypes[1]
+	mi := &file_grpc_basic_service_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -78,7 +78,7 @@ func (x *Hello_Request) String() string {
 func (*Hello_Request) ProtoMessage() {}
 
 func (x *Hello_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_basic_service_proto_msgTypes[1]
+	mi := &file_grpc_basic_service_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -91,7 +91,7 @@ func (x *Hello_Request) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Hello_Request.ProtoReflect.Descriptor instead.
 func (*Hello_Request) Descriptor() ([]byte, []int) {
-	return file_basic_service_proto_rawDescGZIP(), []int{0, 0}
+	return file_grpc_basic_service_proto_rawDescGZIP(), []int{0, 0}
 }
 
 type Hello_Response struct {
@@ -102,7 +102,7 @@ type Hello_Response struct {
 
 func (x *Hello_Response) Reset() {
 	*x = Hello_Response{}
-	mi := &file_basic_service_proto_msgTypes[2]
+	mi := &file_grpc_basic_service_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -114,7 +114,7 @@ func (x *Hello_Response) String() string {
 func (*Hello_Response) ProtoMessage() {}
 
 func (x *Hello_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_basic_service_proto_msgTypes[2]
+	mi := &file_grpc_basic_service_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -127,14 +127,14 @@ func (x *Hello_Response) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Hello_Response.ProtoReflect.Descriptor instead.
 func (*Hello_Response) Descriptor() ([]byte, []int) {
-	return file_basic_service_proto_rawDescGZIP(), []int{0, 1}
+	return file_grpc_basic_service_proto_rawDescGZIP(), []int{0, 1}
 }
 
-var File_basic_service_proto protoreflect.FileDescriptor
+var File_grpc_basic_service_proto protoreflect.FileDescriptor
 
-const file_basic_service_proto_rawDesc = "" +
+const file_grpc_basic_service_proto_rawDesc = "" +
 	"\n" +
-	"\x13basic_service.proto\x12\x11basic_example_api\x1a\x1cgoogle/api/annotations.proto\"\x1e\n" +
+	"\x18grpc/basic_service.proto\x12\x11basic_example_api\x1a\x1cgoogle/api/annotations.proto\"\x1e\n" +
 	"\x05Hello\x1a\t\n" +
 	"\aRequest\x1a\n" +
 	"\n" +
@@ -144,24 +144,24 @@ const file_basic_service_proto_rawDesc = "" +
 	"/api/helloBAZ?go.redsock.ru/moti/examples/basic_example_api;basic_example_apib\x06proto3"
 
 var (
-	file_basic_service_proto_rawDescOnce sync.Once
-	file_basic_service_proto_rawDescData []byte
+	file_grpc_basic_service_proto_rawDescOnce sync.Once
+	file_grpc_basic_service_proto_rawDescData []byte
 )
 
-func file_basic_service_proto_rawDescGZIP() []byte {
-	file_basic_service_proto_rawDescOnce.Do(func() {
-		file_basic_service_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_basic_service_proto_rawDesc), len(file_basic_service_proto_rawDesc)))
+func file_grpc_basic_service_proto_rawDescGZIP() []byte {
+	file_grpc_basic_service_proto_rawDescOnce.Do(func() {
+		file_grpc_basic_service_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_grpc_basic_service_proto_rawDesc), len(file_grpc_basic_service_proto_rawDesc)))
 	})
-	return file_basic_service_proto_rawDescData
+	return file_grpc_basic_service_proto_rawDescData
 }
 
-var file_basic_service_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
-var file_basic_service_proto_goTypes = []any{
+var file_grpc_basic_service_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_grpc_basic_service_proto_goTypes = []any{
 	(*Hello)(nil),          // 0: basic_example_api.Hello
 	(*Hello_Request)(nil),  // 1: basic_example_api.Hello.Request
 	(*Hello_Response)(nil), // 2: basic_example_api.Hello.Response
 }
-var file_basic_service_proto_depIdxs = []int32{
+var file_grpc_basic_service_proto_depIdxs = []int32{
 	1, // 0: basic_example_api.BasicExampleApi.Hello:input_type -> basic_example_api.Hello.Request
 	2, // 1: basic_example_api.BasicExampleApi.Hello:output_type -> basic_example_api.Hello.Response
 	1, // [1:2] is the sub-list for method output_type
@@ -171,26 +171,26 @@ var file_basic_service_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for field type_name
 }
 
-func init() { file_basic_service_proto_init() }
-func file_basic_service_proto_init() {
-	if File_basic_service_proto != nil {
+func init() { file_grpc_basic_service_proto_init() }
+func file_grpc_basic_service_proto_init() {
+	if File_grpc_basic_service_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_basic_service_proto_rawDesc), len(file_basic_service_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_grpc_basic_service_proto_rawDesc), len(file_grpc_basic_service_proto_rawDesc)),
 			NumEnums:      0,
 			NumMessages:   3,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_basic_service_proto_goTypes,
-		DependencyIndexes: file_basic_service_proto_depIdxs,
-		MessageInfos:      file_basic_service_proto_msgTypes,
+		GoTypes:           file_grpc_basic_service_proto_goTypes,
+		DependencyIndexes: file_grpc_basic_service_proto_depIdxs,
+		MessageInfos:      file_grpc_basic_service_proto_msgTypes,
 	}.Build()
-	File_basic_service_proto = out.File
-	file_basic_service_proto_goTypes = nil
-	file_basic_service_proto_depIdxs = nil
+	File_grpc_basic_service_proto = out.File
+	file_grpc_basic_service_proto_goTypes = nil
+	file_grpc_basic_service_proto_depIdxs = nil
 }

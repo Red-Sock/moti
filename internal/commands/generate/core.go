@@ -82,6 +82,10 @@ func (c *Core) Generate(ctx context.Context) error {
 
 func (c *Core) generateFromLocalFS(query *ProtocQuery, input config.Input) error {
 	walker := func(path string, err error) error {
+		if strings.HasPrefix(path, c.Env.MotiConfig.CachePath) {
+			return nil
+		}
+
 		isProto, err := isContainingProto(path, err)
 		if err != nil {
 			return rerrors.Wrap(err, "isContainingProto")

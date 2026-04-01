@@ -1,19 +1,47 @@
 cache_path: proto_modules
 
 deps:
+  #  Deps - is an external git repository to download to cache
+  #  The version can be omited (then the last commit will be fetched)
   - github.com/googleapis/googleapis
+  #  Or be specified to the exact tag (or commit hash)
   - go.redsock.ru/protoc-gen-npm@v0.0.17
+  #  Also, you can specify git repositories with client's to generate
+  #  using tag
   - github.com/vervstack/Matreshka@v1.0.95
+  #  or commit hash
   - github.com/vervstack/Velez@220e0db758f9ce96d9b1f457234616284530622b
+#  And use it in codegen below
 generate:
-#  Server gen
-  - proto_root: api/grpc
-    inputs:
-      - directory: "api/grpc"
+  #  Server generation looks like this.
+  #  It is better to separate local proto file gen from external
+  #  to avoid file mess
+  #
+  #  inputs - defines what proto files should be included in generation using -I flag
+  #           it can be specific local files defined via "directory"
+  #      or
+  #           it can be external git repositories, examples for them, you can find in the input object for client gen
+  #  Each input becomes a separate protoc command
+  - inputs:
+      #      This server gen points to the directory with proto contracts
+      #      if empty or equals to "." (current directory)
+      #         will walk through the whole repository (excluding cache_path since it contains a lot of external proto)
+      - directory: "api"
+    #    plugins section - defines what "protoc-gen-*" plugins should be used to generate final proto
     plugins:
+      #      protoc-gen- part is omitted to save space
+      #      since plugins for proto must be named with protoc-gen- :)
+      #      protoc-gen-go -> go
+      #      protoc-gen-go-grpc -> go-grpc
+      #      protoc-gen-go-temporal -> go-temporal
+      #      and etc.
       - name: go
+        #        place where generated .go files should be placed
         out: internal/api/server
+        #        standard plugins options
         opts:
+          #          source_relative - allows you to generate files ignoring a full package path from a go_package option
+          #          it can be useful in case when go_package has a long import path (like in this case in basic_service.proto)
           paths: source_relative
       - name: go-grpc
         out: internal/api/server
@@ -24,26 +52,31 @@ generate:
         out: internal/api/server
         opts:
           paths: source_relative
-
+      # Moti also supports all type of protoc-gen- binaries even a custom one like this
+      #      protoc-gen-grpc-gateway-ts
       - name: grpc-gateway-ts
-        out: internal/pkg/web/@vervstack/matreshka
+        out: internal/pkg/web/@moti/basic_example
 
-#  Clients gen
+  #  Clients gen
+  #  Same as for server but now using extrenal repos.
   - inputs:
       - git_repo:
           url: github.com/vervstack/Matreshka
+          #          You can specify the exact subdirectory to use as root for generating
           sub_directory: api/grpc
       - git_repo:
+          #          or not specify - then the root of the input repository will be used
           url: github.com/vervstack/Velez
     plugins:
       - name: go
         out: internal/api/clients
         opts:
-#          Generates code right in out directory
-#          paths: source_relative
+          # If a package contains some specific path
+          #          (like this generated section includes only go.vervstack.ru packages)
+          #   you can specify module to omit when generated
+          #   All generated packages will remove substring "go.vervstack.ru" from the beggining
           module: go.vervstack.ru
       - name: go-grpc
         out: internal/api/clients
         opts:
-#          paths: source_relative
           module: go.vervstack.ru

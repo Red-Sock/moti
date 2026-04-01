@@ -7,9 +7,8 @@ import (
 var ErrFileNotFound = rerrors.New("config file not found")
 
 type Generate struct {
-	Inputs    []Input  `json:"inputs" yaml:"inputs"`
-	Plugins   []Plugin `json:"plugins" yaml:"plugins"`
-	ProtoRoot string   `json:"proto_root" yaml:"proto_root"`
+	Inputs  []Input  `json:"inputs" yaml:"inputs"`
+	Plugins []Plugin `json:"plugins" yaml:"plugins"`
 }
 
 type Plugin struct {

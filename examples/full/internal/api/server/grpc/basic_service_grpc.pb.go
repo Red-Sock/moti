@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.3.0
 // - protoc             v5.28.3
-// source: basic_service.proto
+// source: grpc/basic_service.proto
 
 package basic_example_api
 
@@ -105,5 +105,5 @@ var BasicExampleApi_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "basic_service.proto",
+	Metadata: "grpc/basic_service.proto",
 }
