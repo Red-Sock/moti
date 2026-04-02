@@ -79,6 +79,7 @@ func (c *Core) Generate(ctx context.Context) error {
 			command = customPATH + " " + command
 			_, err = c.Env.Console.RunCmd(ctx, c.Env.WorkDir, command, args...)
 			if err != nil {
+				err = parseError(err)
 				return rerrors.Wrap(err, "adapters.RunCmd")
 			}
 		}

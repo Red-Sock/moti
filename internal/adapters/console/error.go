@@ -13,5 +13,5 @@ type RunError struct {
 }
 
 func (e RunError) Error() string {
-	return fmt.Sprintf("Command: %s; Err: %v; Stderr: %s", e.Command, e.Err, e.Stderr)
+	return fmt.Sprintf("Err: %v; Stderr: %s", e.Err, e.Stderr)
 }

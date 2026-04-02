@@ -8,6 +8,7 @@ package basic_example_api;
 option go_package = "go.redsock.ru/moti/examples/basic_example_api;basic_example_api";
 
 import "google/api/annotations.proto";
+import "messages.proto";
 
 service BasicExampleApi {
   rpc Hello(Hello.Request) returns (Hello.Response) {
@@ -15,9 +16,4 @@ service BasicExampleApi {
       get: "/api/hello"
     };
   }
-}
-
-message Hello {
-  message Request{}
-  message Response{}
 }

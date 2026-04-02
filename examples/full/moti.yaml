@@ -56,7 +56,7 @@ generate:
       #      This server gen points to the directory with proto contracts
       #      if empty or equals to "." (current directory)
       #         will walk through the whole repository (excluding cache_path since it contains a lot of external proto)
-      - directory: "api"
+      - directory: "api/grpc"
     #    plugins section - defines what "protoc-gen-*" plugins should be used to generate final proto
     plugins:
       #      protoc-gen- part is omitted to save space

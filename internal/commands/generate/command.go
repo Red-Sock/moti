@@ -1,10 +1,9 @@
 package generate
 
 import (
-	"fmt"
-
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
+	"go.redsock.ru/rerrors"
 
 	"go.redsock.ru/moti/internal/adapters/fs"
 	"go.redsock.ru/moti/internal/commands"
@@ -30,8 +29,7 @@ func (c Command) Action(cmd *cobra.Command, args []string) error {
 	err := c.Do(cmd, args)
 	if err != nil {
 		log.Error().
-			Err(err).
-			Msg("failed to generate")
+			Msg(err.Error())
 	}
 
 	return nil
@@ -45,7 +43,7 @@ func (c Command) Do(cmd *cobra.Command, _ []string) error {
 
 	err := app.Generate(cmd.Context())
 	if err != nil {
-		return fmt.Errorf("generator.Generate: %w", err)
+		return rerrors.Wrap(err)
 	}
 
 	return nil
