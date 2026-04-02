@@ -88,7 +88,7 @@ generate:
         out: internal/pkg/web/@moti/basic_example
 
   #  Clients gen
-  #  Same as for server but now using extrenal repos.
+  #  Same as for server but now using external repos.
   - inputs:
       - git_repo:
           url: github.com/vervstack/Matreshka

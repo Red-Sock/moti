@@ -212,14 +212,11 @@ moti generate
 
 We are constantly working to improve `moti`. Here are some features planned for the future:
 
-- [ ] **Adhoc Operations**: Run go mod tidy, npm run generate after or before protoc generation (e.g. useful for go-import)
-  - [ ] with "AllowToFail" flag
 - [x] **Binary Installment**: Automated installation of `protoc-gen-*` plugins of specific versions
   - [x] Generic like `go install ...`
   - [ ] Platform specific for `choco`, `brew`, `apt`
 - [ ] **moti Registry**: A central registry for easier discovery and sharing of proto modules and watching over backward compatibility and deprecated contracts
   - [ ] Github actions for pushing to registry
-- [ ] **Module option with wildcard**: to allow omitting `go.redsock.ru/*/api` patterns
 - [ ] **Generation and loading animations**: cuz it looks cool and fun
 - [ ] **Linting**: moved from easy-p
 
