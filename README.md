@@ -95,6 +95,83 @@ generate:
           module: go.vervstack.ru
 ```
 
+## Key Concepts
+### Proto Root
+
+This is **crucial**:
+
+moti (specifically protoc) generates code from proto files based on what the first import is 
+
+For the following project structure:
+
+- api/
+  - grpc/
+    - some.proto
+    - some_other.proto
+    
+Protoc can be called with import of the `root` of the repository (-I ".") **or** with the folder `gprc` (-I "api/grpc")
+
+Both are valid generation ways **but** with nuances
+
+#### For root
+When one proto file imports other, it will use the full path from the root of the repository 
+```protobuf common.proto
+syntax = "proto3";
+
+package moti_api;
+
+message Empty {}
+```
+
+```protobuf api.proto
+syntax = "proto3";
+
+package moti_api;
+// protoc thinks that repository is located at ./ and if common.proto passed stripped - it will look for it at the root
+import "api/grpc/commmon.proto";
+
+//...
+```
+
+#### For folder gen
+When one proto file imports other, it will use the full path from the folder that 
+**is considered root** (first `-I ...` import)
+
+```protobuf common.proto
+syntax = "proto3";
+
+package moti_api;
+
+message Empty {}
+```
+
+```protobuf api.proto
+syntax = "proto3";
+
+package moti_api;
+
+// protoc thinks that repository is located at ./api/grpc/* and look for common.proto there
+import "commmon.proto";
+
+//...
+```
+
+
+#### Generation results
+
+Based on what type of generation you prefer, you also will get different results.
+
+For folder as root import (-I api/grpc) - generated files will be saved straight to the `out` option
+
+So if out is `internal/api/server` and root import is the root of the repository -> 
+generated files will be located there (with a full package path: go_package, java_package, etc.
+unless source_relative is not passed)
+
+For folder as root import (-I api/grpc) - generated files will be stored in `internal/api/server` 
+**plus** the path to proto files
+
+e.g. `internal/api/server/api/grpc/*.go`
+
 ## Commands
 
 ### install
