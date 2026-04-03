@@ -8,6 +8,7 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 	"go.redsock.ru/rerrors"
+	"go.redsock.ru/toolbox"
 	"gopkg.in/yaml.v3"
 )
 
@@ -49,6 +50,8 @@ func Read(filepath string) (Config, error) {
 	if err != nil {
 		return Config{}, rerrors.Wrap(err, "error parsing config file from yaml")
 	}
+
+	cfg.CachePath = toolbox.Coalesce(cfg.CachePath, "proto_modules")
 
 	return cfg, nil
 }
