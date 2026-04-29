@@ -137,7 +137,7 @@ func (c *Core) generateFromGitRepo(query *ProtocQuery, input config.Input) error
 		}
 
 		if !isInstalled {
-			return rerrors.Wrap(models.ErrModuleNotInstalled, module)
+			return rerrors.Wrap(models.ErrModuleNotInstalled, module.Name)
 		}
 
 		modulePaths, err = c.getModulePath(module.Name)
