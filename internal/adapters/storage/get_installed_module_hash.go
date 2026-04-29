@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"go.redsock.ru/rerrors"
 	"golang.org/x/mod/sumdb/dirhash"
 
 	"go.redsock.ru/moti/internal/models"
@@ -15,7 +16,7 @@ func (s *Storage) GetInstalledModuleHash(moduleName string, revisionVersion stri
 	installedPackageHash, err := dirhash.HashDir(installedDirPath, "", dirhash.DefaultHash)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return "", models.ErrModuleNotInstalled
+			return "", rerrors.Wrap(models.ErrModuleNotInstalled, moduleName)
 		}
 
 		return "", fmt.Errorf("dirhash.HashDir: %w", err)

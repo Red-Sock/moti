@@ -39,3 +39,8 @@ type InputGitRepo struct {
 	SubDirectory string `yaml:"sub_directory"`
 	Out          string `yaml:"out"`
 }
+
+type Replace struct {
+	Old string `json:"old" yaml:"old"`
+	New string `json:"new" yaml:"new"`
+}

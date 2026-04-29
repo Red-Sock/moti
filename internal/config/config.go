@@ -17,6 +17,8 @@ type Config struct {
 
 	Deps []string `json:"deps" yaml:"deps"`
 
+	Replace []Replace `json:"replace" yaml:"replace"`
+
 	Binaries Binaries `json:"binaries" yaml:"binaries"`
 
 	Generate []Generate `json:"generate" yaml:"generate"`

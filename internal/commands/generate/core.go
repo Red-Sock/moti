@@ -115,20 +115,35 @@ func (c *Core) generateFromLocalFS(query *ProtocQuery, input config.Input) error
 }
 
 func (c *Core) generateFromGitRepo(query *ProtocQuery, input config.Input) error {
-	module := models.NewModule(input.GitRepo.URL)
+	moduleName := input.GitRepo.URL
+	var modulePaths string
+	var err error
 
-	isInstalled, err := c.Env.Storage.IsModuleInstalled(module)
-	if err != nil {
-		return rerrors.Wrap(err, "c.isModuleInstalled")
+	isReplaced := false
+	for _, replace := range c.Env.MotiConfig.Replace {
+		if replace.Old == moduleName {
+			modulePaths = replace.New
+			isReplaced = true
+			break
+		}
 	}
 
-	if !isInstalled {
-		return rerrors.Wrap(models.ErrModuleNotInstalled, module)
-	}
+	if !isReplaced {
+		module := models.NewModule(moduleName)
 
-	modulePaths, err := c.getModulePath(module.Name)
-	if err != nil {
-		return rerrors.Wrap(err, "c.getModulePath")
+		isInstalled, err := c.Env.Storage.IsModuleInstalled(module)
+		if err != nil {
+			return rerrors.Wrap(err, "c.isModuleInstalled")
+		}
+
+		if !isInstalled {
+			return rerrors.Wrap(models.ErrModuleNotInstalled, module)
+		}
+
+		modulePaths, err = c.getModulePath(module.Name)
+		if err != nil {
+			return rerrors.Wrap(err, "c.getModulePath")
+		}
 	}
 
 	modulePaths = path.Join(modulePaths, input.GitRepo.SubDirectory)
@@ -166,6 +181,12 @@ func (c *Core) generateFromGitRepo(query *ProtocQuery, input config.Input) error
 func (c *Core) getModulePath(requestedDependency string) (string, error) {
 	module := models.NewModule(requestedDependency)
 
+	for _, replace := range c.Env.MotiConfig.Replace {
+		if strings.HasPrefix(replace.Old, module.Name) {
+			return replace.New, nil
+		}
+	}
+
 	isInstalled, err := c.Env.Storage.IsModuleInstalled(module)
 	if err != nil {
 		return "", rerrors.Wrap(err, "h.storage.IsModuleInstalled")
@@ -186,6 +207,12 @@ func (c *Core) getModulePath(requestedDependency string) (string, error) {
 func (c *Core) getFirstInput(inp config.Input) string {
 	if inp.GitRepo.URL == "" {
 		return toolbox.Coalesce(inp.Directory, ".")
+	}
+
+	for _, replace := range c.Env.MotiConfig.Replace {
+		if replace.Old == inp.GitRepo.URL {
+			return path.Join(replace.New, inp.GitRepo.SubDirectory)
+		}
 	}
 
 	modulePath, err := c.getModulePath(inp.GitRepo.URL)

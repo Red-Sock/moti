@@ -81,6 +81,16 @@ func (c *Core) Install(ctx context.Context) error {
 }
 
 func (c *Core) InstallPackage(ctx context.Context, requestedModule models.Module) error {
+	for _, replace := range c.MotiConfig.Replace {
+		if replace.Old == requestedModule.Name {
+			log.Info().
+				Str("module", requestedModule.Name).
+				Str("local_path", replace.New).
+				Msg("Module is replaced with local path, skipping install")
+			return nil
+		}
+	}
+
 	isInstalled, err := c.Storage.IsModuleInstalled(requestedModule)
 	if err != nil {
 		return rerrors.Wrap(err, "c.storage.IsModuleInstalled")

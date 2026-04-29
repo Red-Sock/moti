@@ -110,3 +110,7 @@ generate:
         out: internal/api/clients
         opts:
           module: go.vervstack.ru
+
+#replace:
+#  - old: github.com/vervstack/Matreshka
+#    new: /Users/alexbukov/verv/Matreshka
