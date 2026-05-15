@@ -44,10 +44,53 @@ func TestGenerate(t *testing.T) {
 	c := &Core{
 		Env: commands.Env{
 			MotiConfig: config.Config{
+				CachePath: "proto_modules",
 				Generate: []config.Generate{
 					{
 						Inputs: []config.Input{
 							{Directory: "test"},
+						},
+					},
+				},
+			},
+			Console:  mConsole,
+			Storage:  mStorage,
+			LockFile: mLockFile,
+			WorkDir:  ".",
+		},
+		Walker: mWalker,
+	}
+
+	err := c.Generate(ctx)
+	require.NoError(t, err)
+}
+
+func TestGenerate_OpenAPI(t *testing.T) {
+	ctx := t.Context()
+
+	expectedFlags := []string{
+		"--target", "internal/clients/customer",
+		"--package", "customer",
+		"--clean",
+		"customers/openapi.yaml",
+	}
+
+	mConsole := mocks.NewConsoleMock(t)
+	mConsole.RunCmdMock.Expect(ctx, ".", "ogen", expectedFlags...).Return("", nil)
+
+	mStorage := mocks.NewIStorageMock(t)
+	mLockFile := mocks.NewILockFileMock(t)
+	mWalker := mocks.NewIWalkerMock(t)
+
+	c := &Core{
+		Env: commands.Env{
+			MotiConfig: config.Config{
+				CachePath: "proto_modules",
+				Generate: []config.Generate{
+					{
+						OpenAPI: &config.OpenAPI{
+							Binary: "ogen",
+							Flags:  expectedFlags,
 						},
 					},
 				},
@@ -96,6 +139,7 @@ func TestGenerate_MultipleInputs(t *testing.T) {
 	c := &Core{
 		Env: commands.Env{
 			MotiConfig: config.Config{
+				CachePath: "proto_modules",
 				Generate: []config.Generate{
 					{
 						Inputs: []config.Input{

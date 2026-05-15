@@ -7,8 +7,14 @@ import (
 var ErrFileNotFound = rerrors.New("config file not found")
 
 type Generate struct {
-	Inputs  []Input  `json:"inputs" yaml:"inputs"`
+	Inputs  []Input  `json:"inputs"  yaml:"inputs"`
 	Plugins []Plugin `json:"plugins" yaml:"plugins"`
+	OpenAPI *OpenAPI `json:"openapi" yaml:"openapi"`
+}
+
+type OpenAPI struct {
+	Binary string   `json:"binary" yaml:"binary"`
+	Flags  []string `json:"flags"  yaml:"flags"`
 }
 
 type Binaries struct {

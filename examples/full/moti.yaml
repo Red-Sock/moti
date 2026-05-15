@@ -41,6 +41,11 @@ binaries:
 #             (in this case it's v1.36.11)
 #        if empty - checks that binary is installed without checking version
         version_check_args: --version
+#   OpenAPI generators are regular binaries — install them the same way.
+#   allow_custom must be true since they don't have a protoc-gen- prefix.
+    - go:
+        module: github.com/ogen-go/ogen/cmd/ogen@v1.9.0
+        version_check_args: --version
 
 generate:
   #  Server generation looks like this.
@@ -110,6 +115,19 @@ generate:
         out: internal/api/clients
         opts:
           module: go.vervstack.ru
+
+#  OpenAPI generation — runs independently of protoc.
+#  Put it next to plugins inside a generate rule. Each entry calls the binary
+#  with the flags verbatim, so the spec file path goes into flags as well.
+  - openapi:
+      binary: ogen
+      flags:
+        - "--target"
+        - "internal/clients/todos"
+        - "--package"
+        - "todos"
+        - "--clean"
+        - "todos/openapi.yaml"
 
 #replace:
 #  - old: github.com/vervstack/Matreshka

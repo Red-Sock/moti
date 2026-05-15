@@ -76,15 +76,35 @@ func (c *Core) Generate(ctx context.Context) error {
 			log.Info().
 				Msg(customPATHLog + command + " " + strings.Join(args, " \\\n           "))
 
-			command = customPATH + " " + command
+			command = strings.TrimSpace(customPATH + " " + command)
 			_, err = c.Env.Console.RunCmd(ctx, c.Env.WorkDir, command, args...)
 			if err != nil {
 				err = parseError(err)
 				return rerrors.Wrap(err, "adapters.RunCmd")
 			}
 		}
+
+		if genCfg.OpenAPI != nil {
+			err := c.generateOpenAPI(ctx, genCfg.OpenAPI)
+			if err != nil {
+				return rerrors.Wrap(err, "generateOpenAPI")
+			}
+		}
 	}
 
+	return nil
+}
+
+func (c *Core) generateOpenAPI(ctx context.Context, openAPI *config.OpenAPI) error {
+	customPATH := c.Env.MotiConfig.BuildPATH(c.Env.WorkDir)
+	command := strings.TrimSpace(customPATH + " " + openAPI.Binary)
+
+	log.Info().Msg(command + " " + strings.Join(openAPI.Flags, " "))
+
+	_, err := c.Env.Console.RunCmd(ctx, c.Env.WorkDir, command, openAPI.Flags...)
+	if err != nil {
+		return rerrors.Wrap(err)
+	}
 	return nil
 }
 
