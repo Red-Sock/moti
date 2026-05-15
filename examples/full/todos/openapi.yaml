@@ -1,0 +1,129 @@
+openapi: "3.0.3"
+info:
+  title: Todo API
+  version: "1.0.0"
+
+paths:
+  /todos:
+    get:
+      operationId: listTodos
+      summary: List all todos
+      responses:
+        "200":
+          description: List of todos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Todo'
+    post:
+      operationId: createTodo
+      summary: Create a todo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTodoRequest'
+      responses:
+        "201":
+          description: Created todo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Todo'
+
+  /todos/{id}:
+    get:
+      operationId: getTodo
+      summary: Get a todo by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: The todo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Todo'
+        "404":
+          description: Not found
+    put:
+      operationId: updateTodo
+      summary: Update a todo
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTodoRequest'
+      responses:
+        "200":
+          description: Updated todo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Todo'
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteTodo
+      summary: Delete a todo
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+
+components:
+  schemas:
+    Todo:
+      type: object
+      required:
+        - id
+        - title
+        - done
+      properties:
+        id:
+          type: integer
+          format: int64
+        title:
+          type: string
+        done:
+          type: boolean
+
+    CreateTodoRequest:
+      type: object
+      required:
+        - title
+      properties:
+        title:
+          type: string
+
+    UpdateTodoRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        done:
+          type: boolean
