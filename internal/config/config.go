@@ -4,6 +4,7 @@ import (
 	"io"
 	"os"
 	"path"
+	"path/filepath"
 
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
@@ -24,8 +25,8 @@ type Config struct {
 	Generate []Generate `json:"generate" yaml:"generate"`
 }
 
-func Read(filepath string) (Config, error) {
-	cfgFile, err := os.Open(filepath)
+func Read(cfgPath string) (Config, error) {
+	cfgFile, err := os.Open(cfgPath)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return Config{}, ErrFileNotFound
@@ -37,7 +38,7 @@ func Read(filepath string) (Config, error) {
 	defer func() {
 		err = cfgFile.Close()
 		if err != nil {
-			log.Debug().Err(err).Str("filepath", filepath).Msg("error closing config file")
+			log.Debug().Err(err).Str("filepath", cfgPath).Msg("error closing config file")
 		}
 	}()
 
@@ -54,6 +55,13 @@ func Read(filepath string) (Config, error) {
 	}
 
 	cfg.CachePath = toolbox.Coalesce(cfg.CachePath, "proto_modules")
+
+	cfgDir := filepath.Dir(cfgPath)
+	for i, r := range cfg.Replace {
+		if !filepath.IsAbs(r.New) {
+			cfg.Replace[i].New = filepath.Join(cfgDir, r.New)
+		}
+	}
 
 	return cfg, nil
 }
