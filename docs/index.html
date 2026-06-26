@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>moti — proto contracts, painlessly generated</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous"/>
+<link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { width:100%; min-height:100%; background:#0c0c0f; color:#e8e8f0; font-family:'Comfortaa', sans-serif; }
+  ::selection { background: rgba(179,136,255,0.35); color:#fff; }
+
+  @keyframes blink      { 0%,100%{opacity:1} 50%{opacity:0} }
+  @keyframes flowDash   { to { stroke-dashoffset: -40; } }
+  @keyframes pulseRing  { 0%,100% { transform:scale(1); opacity:.55; } 50% { transform:scale(1.06); opacity:.85; } }
+  @keyframes fadeUp     { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes orbit      { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
+
+  .nav-link { color:#72728a; text-decoration:none; transition:color 0.15s; }
+  .nav-link:hover { color:#e8e8f0; }
+  .nav-link.primary { color:#b388ff; font-weight:600; }
+  .nav-link.primary:hover { color:#b388ff; }
+
+  .feature-card { background:#13131a; padding:30px 28px; transition:background 0.18s; cursor:default; }
+  .feature-card:hover { background:#1c1c26; }
+
+  .scroll-link { color:#b388ff; text-decoration:none; border-bottom:1px solid rgba(179,136,255,0.35); transition:border-color .15s; }
+  .scroll-link:hover { border-bottom-color:#b388ff; }
+
+  .icon-tile { width:36px; height:36px; border-radius:8px; background:rgba(179,136,255,0.10); border:1px solid rgba(179,136,255,0.32); display:flex; align-items:center; justify-content:center; font-size:17px; margin-bottom:16px; color:#b388ff; font-family:'JetBrains Mono',monospace; }
+</style>
+</head>
+<body>
+
+<!-- ── NAV ───────────────────────────────────────────────────────────── -->
+<nav style="display:flex;align-items:center;justify-content:space-between;padding:0 56px;height:64px;border-bottom:1px solid rgba(179,136,255,0.16);background:rgba(12,12,15,0.88);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);position:sticky;top:0;z-index:30;">
+  <div style="display:flex;align-items:center;gap:11px;">
+    <svg width="28" height="28" viewBox="0 0 64 64" fill="none">
+      <defs>
+        <linearGradient id="g1n" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d3b8ff"/><stop offset="1" stop-color="#7a4dff"/></linearGradient>
+        <linearGradient id="g2n" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#b388ff" stop-opacity=".95"/><stop offset="1" stop-color="#5b2db8" stop-opacity=".7"/></linearGradient>
+      </defs>
+      <path d="M32 4 L56 18 L56 46 L32 60 L8 46 L8 18 Z" fill="none" stroke="url(#g1n)" stroke-width="3.2" stroke-linejoin="round"/>
+      <path d="M32 18 L46 26 L46 42 L32 50 L18 42 L18 26 Z" fill="url(#g2n)" opacity="0.95"/>
+      <path d="M32 28 L32 40 M32 40 L26 36 M32 40 L38 36" stroke="#0c0c0f" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <span style="font-weight:700;font-size:17px;letter-spacing:-0.02em;color:#e8e8f0;">moti<span style="color:#72728a;font-weight:400;margin-left:8px;font-size:13.5px;"><span style="color:#4a4a5c;">·</span> a redsock tool</span></span>
+  </div>
+  <div style="display:flex;align-items:center;gap:30px;font-size:13.5px;">
+    <a href="#features" class="nav-link">Features</a>
+    <a href="#pipeline" class="nav-link">Pipeline</a>
+    <a href="#config" class="nav-link">Config</a>
+    <a href="index.md" class="nav-link primary">Docs <span style="margin-left:5px;font-family:'JetBrains Mono',monospace;font-size:11px;opacity:.6;">↗</span></a>
+    <a href="#" class="nav-link">GitHub</a>
+  </div>
+  <a href="index.md#quickstart" style="text-decoration:none;">
+    <button style="background:#b388ff;border:none;border-radius:8px;color:#0c0c0f;font-family:'Comfortaa',sans-serif;font-weight:700;font-size:13px;padding:9px 20px;cursor:pointer;letter-spacing:-0.005em;">Quickstart →</button>
+  </a>
+</nav>
+
+<!-- ── HERO ──────────────────────────────────────────────────────────── -->
+<section style="padding:88px 56px 60px;max-width:1280px;margin:0 auto;">
+  <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(179,136,255,0.10);border:1px solid rgba(179,136,255,0.32);border-radius:20px;padding:4px 14px;margin-bottom:24px;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:#b388ff;letter-spacing:0.02em;">
+    <span style="width:6px;height:6px;border-radius:50%;background:#b388ff;display:inline-block;"></span>
+    proto contracts · grpc · openapi
+  </div>
+
+  <h1 style="font-size:64px;font-weight:700;line-height:1.05;letter-spacing:-0.035em;color:#e8e8f0;text-wrap:balance;margin-bottom:24px;max-width:920px;">
+    Wrap protoc.<br>
+    Pull contracts.<br>
+    <span style="background:linear-gradient(90deg,#b388ff 0%,#8b5cff 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Ship clients in any language.</span>
+  </h1>
+
+  <p style="font-size:18px;color:#b0b0c8;line-height:1.7;max-width:640px;margin-bottom:36px;">
+    moti is a tiny binary that wraps <span style="color:#e8e8f0;font-family:'JetBrains Mono',monospace;font-size:15px;">protoc</span> with sane defaults, pulls your <span style="color:#e8e8f0;">.proto</span> and <span style="color:#e8e8f0;">swagger</span> files from any git repo, and generates gRPC servers, clients, and HTTP stubs in any language protoc supports.
+  </p>
+
+  <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:24px;">
+    <div style="display:flex;align-items:center;gap:11px;background:#13131a;border:1px solid rgba(179,136,255,0.16);border-radius:9px;padding:12px 18px;font-family:'JetBrains Mono',monospace;font-size:13.5px;">
+      <span style="color:#b388ff;user-select:none;font-weight:600;">$</span>
+      <span style="color:#e8e8f0;">go install go.redsock.ru/moti@latest</span>
+      <button id="copy-btn" style="margin-left:8px;background:transparent;border:1px solid rgba(179,136,255,0.16);border-radius:5px;color:#72728a;font-family:'JetBrains Mono',monospace;font-size:10.5px;padding:3px 8px;cursor:pointer;letter-spacing:0.04em;">copy</button>
+    </div>
+    <a href="index.md#quickstart" style="text-decoration:none;">
+      <button style="background:#b388ff;border:none;border-radius:9px;color:#0c0c0f;font-family:'Comfortaa',sans-serif;font-weight:700;font-size:14px;padding:13px 24px;cursor:pointer;">Read the docs →</button>
+    </a>
+  </div>
+
+  <div style="font-family:'JetBrains Mono',monospace;font-size:11.5px;color:#72728a;margin-bottom:54px;display:flex;gap:18px;flex-wrap:wrap;">
+    <span><span style="color:#7adfaa;">✓</span> Single Go binary</span>
+    <span><span style="color:#7adfaa;">✓</span> Multi-plugin codegen</span>
+    <span><span style="color:#7adfaa;">✓</span> Git-based contract registry</span>
+    <span><span style="color:#7adfaa;">✓</span> Installs protoc &amp; plugins for you</span>
+  </div>
+
+  <!-- PIPELINE -->
+  <div id="pipeline" style="position:relative;width:100%;height:380px;border-radius:14px;background:linear-gradient(180deg,#13131a 0%,#0c0c0f 100%);border:1px solid rgba(179,136,255,0.16);overflow:hidden;">
+    <!-- grid -->
+    <svg width="100%" height="100%" style="position:absolute;inset:0;opacity:0.4;" aria-hidden="true">
+      <defs>
+        <pattern id="pGrid" width="40" height="40" patternUnits="userSpaceOnUse">
+          <path d="M40 0 L0 0 0 40" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+        </pattern>
+        <radialGradient id="pGlow" cx="50%" cy="50%" r="50%">
+          <stop offset="0" stop-color="#b388ff" stop-opacity="0.28"/>
+          <stop offset="1" stop-color="#b388ff" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#pGrid)"/>
+      <circle cx="50%" cy="50%" r="200" fill="url(#pGlow)"/>
+    </svg>
+
+    <!-- lanes + hub rings -->
+    <svg viewBox="0 0 1000 380" preserveAspectRatio="xMidYMid meet" style="position:absolute;inset:0;width:100%;height:100%;" aria-hidden="true">
+      <path d="M 230 60  C 340 60,  420 190, 480 190" fill="none" stroke="#b388ff" stroke-opacity="0.35" stroke-width="1.3" stroke-dasharray="4 6" style="animation:flowDash 1.8s linear infinite;animation-delay:0s"/>
+      <path d="M 230 114 C 340 114, 420 190, 480 190" fill="none" stroke="#b388ff" stroke-opacity="0.35" stroke-width="1.3" stroke-dasharray="4 6" style="animation:flowDash 1.8s linear infinite;animation-delay:.18s"/>
+      <path d="M 230 168 C 340 168, 420 190, 480 190" fill="none" stroke="#b388ff" stroke-opacity="0.35" stroke-width="1.3" stroke-dasharray="4 6" style="animation:flowDash 1.8s linear infinite;animation-delay:.36s"/>
+      <path d="M 230 222 C 340 222, 420 190, 480 190" fill="none" stroke="#b388ff" stroke-opacity="0.35" stroke-width="1.3" stroke-dasharray="4 6" style="animation:flowDash 1.8s linear infinite;animation-delay:.54s"/>
+      <path d="M 230 276 C 340 276, 420 190, 480 190" fill="none" stroke="#b388ff" stroke-opacity="0.35" stroke-width="1.3" stroke-dasharray="4 6" style="animation:flowDash 1.8s linear infinite;animation-delay:.72s"/>
+      <path d="M 520 190 C 580 190, 660 80,  770 80"  fill="none" stroke="#b388ff" stroke-opacity="0.45" stroke-width="1.3" stroke-dasharray="4 6" style="animation:flowDash 1.5s linear infinite;animation-delay:0s"/>
+      <path d="M 520 190 C 580 190, 660 118, 770 118" fill="none" stroke="#b388ff" stroke-opacity="0.45" stroke-width="1.3" stroke-dasharray="4 6" style="animation:flowDash 1.5s linear infinite;animation-delay:.12s"/>
+      <path d="M 520 190 C 580 190, 660 156, 770 156" fill="none" stroke="#b388ff" stroke-opacity="0.45" stroke-width="1.3" stroke-dasharray="4 6" style="animation:flowDash 1.5s linear infinite;animation-delay:.24s"/>
+      <path d="M 520 190 C 580 190, 660 194, 770 194" fill="none" stroke="#b388ff" stroke-opacity="0.45" stroke-width="1.3" stroke-dasharray="4 6" style="animation:flowDash 1.5s linear infinite;animation-delay:.36s"/>
+      <path d="M 520 190 C 580 190, 660 232, 770 232" fill="none" stroke="#b388ff" stroke-opacity="0.45" stroke-width="1.3" stroke-dasharray="4 6" style="animation:flowDash 1.5s linear infinite;animation-delay:.48s"/>
+      <path d="M 520 190 C 580 190, 660 270, 770 270" fill="none" stroke="#b388ff" stroke-opacity="0.45" stroke-width="1.3" stroke-dasharray="4 6" style="animation:flowDash 1.5s linear infinite;animation-delay:.60s"/>
+      <g transform="translate(500 190)">
+        <circle r="62" fill="none" stroke="#b388ff" stroke-opacity="0.18" stroke-width="1" stroke-dasharray="3 8" style="transform-origin:center;animation:orbit 18s linear infinite;"/>
+        <circle r="48" fill="none" stroke="#b388ff" stroke-opacity="0.28" stroke-width="1.2"/>
+        <circle r="38" fill="#13131a" stroke="#b388ff" stroke-opacity="0.7" stroke-width="1.5" style="transform-origin:center;animation:pulseRing 3.4s ease-in-out infinite;"/>
+      </g>
+    </svg>
+
+    <!-- hub label -->
+    <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:4px;z-index:3;">
+      <svg width="36" height="36" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+        <defs>
+          <linearGradient id="g1h" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d3b8ff"/><stop offset="1" stop-color="#7a4dff"/></linearGradient>
+          <linearGradient id="g2h" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#b388ff" stop-opacity=".95"/><stop offset="1" stop-color="#5b2db8" stop-opacity=".7"/></linearGradient>
+        </defs>
+        <path d="M32 4 L56 18 L56 46 L32 60 L8 46 L8 18 Z" fill="none" stroke="url(#g1h)" stroke-width="3.2" stroke-linejoin="round"/>
+        <path d="M32 18 L46 26 L46 42 L32 50 L18 42 L18 26 Z" fill="url(#g2h)" opacity="0.95"/>
+        <path d="M32 28 L32 40 M32 40 L26 36 M32 40 L38 36" stroke="#0c0c0f" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#b388ff;letter-spacing:0.14em;text-transform:uppercase;">moti</div>
+    </div>
+
+    <!-- input pills -->
+    <div style="position:absolute;left:32px;top:42px;display:flex;flex-direction:column;gap:14px;z-index:2;">
+      <div style="display:flex;align-items:center;gap:9px;padding:7px 11px;background:#1c1c26;border:1px solid rgba(179,136,255,0.16);border-radius:7px;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:#e8e8f0;min-width:148px;animation:fadeUp .5s ease-out 0s both;"><span style="font-size:9px;font-weight:600;color:#b388ff;border:1px solid rgba(179,136,255,0.32);padding:1px 5px;border-radius:3px;letter-spacing:0.04em;">PROTO</span>user.proto</div>
+      <div style="display:flex;align-items:center;gap:9px;padding:7px 11px;background:#1c1c26;border:1px solid rgba(179,136,255,0.16);border-radius:7px;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:#e8e8f0;min-width:148px;animation:fadeUp .5s ease-out .08s both;"><span style="font-size:9px;font-weight:600;color:#b388ff;border:1px solid rgba(179,136,255,0.32);padding:1px 5px;border-radius:3px;letter-spacing:0.04em;">PROTO</span>orders.proto</div>
+      <div style="display:flex;align-items:center;gap:9px;padding:7px 11px;background:#1c1c26;border:1px solid rgba(179,136,255,0.16);border-radius:7px;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:#e8e8f0;min-width:148px;animation:fadeUp .5s ease-out .16s both;"><span style="font-size:9px;font-weight:600;color:#b388ff;border:1px solid rgba(179,136,255,0.32);padding:1px 5px;border-radius:3px;letter-spacing:0.04em;">PROTO</span>billing.proto</div>
+      <div style="display:flex;align-items:center;gap:9px;padding:7px 11px;background:#1c1c26;border:1px solid rgba(179,136,255,0.16);border-radius:7px;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:#e8e8f0;min-width:148px;animation:fadeUp .5s ease-out .24s both;"><span style="font-size:9px;font-weight:600;color:#ffd43b;border:1px solid rgba(255,212,59,0.33);padding:1px 5px;border-radius:3px;letter-spacing:0.04em;">YAML</span>swagger.yaml</div>
+      <div style="display:flex;align-items:center;gap:9px;padding:7px 11px;background:#1c1c26;border:1px solid rgba(179,136,255,0.16);border-radius:7px;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:#e8e8f0;min-width:148px;animation:fadeUp .5s ease-out .32s both;"><span style="font-size:9px;font-weight:600;color:#b388ff;border:1px solid rgba(179,136,255,0.32);padding:1px 5px;border-radius:3px;letter-spacing:0.04em;">PROTO</span>gateway.proto</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#4a4a5c;letter-spacing:0.1em;text-transform:uppercase;margin-top:6px;padding-left:2px;">◂ contracts</div>
+    </div>
+
+    <!-- output pills -->
+    <div style="position:absolute;right:32px;top:62px;display:flex;flex-direction:column;gap:8px;z-index:2;">
+      <div style="display:flex;align-items:center;gap:9px;padding:6px 12px 6px 10px;background:#1c1c26;border:1px solid rgba(179,136,255,0.16);border-radius:7px;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:#e8e8f0;min-width:132px;animation:fadeUp .5s ease-out .40s both;"><span style="width:8px;height:8px;border-radius:50%;background:#00add8;flex-shrink:0;"></span>Go<span style="margin-left:auto;font-size:10px;color:#72728a;">.gen</span></div>
+      <div style="display:flex;align-items:center;gap:9px;padding:6px 12px 6px 10px;background:#1c1c26;border:1px solid rgba(179,136,255,0.16);border-radius:7px;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:#e8e8f0;min-width:132px;animation:fadeUp .5s ease-out .47s both;"><span style="width:8px;height:8px;border-radius:50%;background:#3178c6;flex-shrink:0;"></span>TypeScript<span style="margin-left:auto;font-size:10px;color:#72728a;">.gen</span></div>
+      <div style="display:flex;align-items:center;gap:9px;padding:6px 12px 6px 10px;background:#1c1c26;border:1px solid rgba(179,136,255,0.16);border-radius:7px;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:#e8e8f0;min-width:132px;animation:fadeUp .5s ease-out .54s both;"><span style="width:8px;height:8px;border-radius:50%;background:#ffd43b;flex-shrink:0;"></span>Python<span style="margin-left:auto;font-size:10px;color:#72728a;">.gen</span></div>
+      <div style="display:flex;align-items:center;gap:9px;padding:6px 12px 6px 10px;background:#1c1c26;border:1px solid rgba(179,136,255,0.16);border-radius:7px;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:#e8e8f0;min-width:132px;animation:fadeUp .5s ease-out .61s both;"><span style="width:8px;height:8px;border-radius:50%;background:#dea584;flex-shrink:0;"></span>Rust<span style="margin-left:auto;font-size:10px;color:#72728a;">.gen</span></div>
+      <div style="display:flex;align-items:center;gap:9px;padding:6px 12px 6px 10px;background:#1c1c26;border:1px solid rgba(179,136,255,0.16);border-radius:7px;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:#e8e8f0;min-width:132px;animation:fadeUp .5s ease-out .68s both;"><span style="width:8px;height:8px;border-radius:50%;background:#f89820;flex-shrink:0;"></span>Java<span style="margin-left:auto;font-size:10px;color:#72728a;">.gen</span></div>
+      <div style="display:flex;align-items:center;gap:9px;padding:6px 12px 6px 10px;background:#1c1c26;border:1px solid rgba(179,136,255,0.16);border-radius:7px;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:#e8e8f0;min-width:132px;animation:fadeUp .5s ease-out .75s both;"><span style="width:8px;height:8px;border-radius:50%;background:#9b4f96;flex-shrink:0;"></span>C#<span style="margin-left:auto;font-size:10px;color:#72728a;">.gen</span></div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#4a4a5c;letter-spacing:0.1em;text-transform:uppercase;margin-top:6px;padding-right:2px;text-align:right;">generated ▸</div>
+    </div>
+
+    <!-- meta bar -->
+    <div style="position:absolute;bottom:14px;left:18px;font-family:'JetBrains Mono',monospace;font-size:10.5px;color:#72728a;letter-spacing:0.06em;display:flex;gap:14px;">
+      <span><span style="color:#b388ff;">git pull</span> → fetch contracts</span>
+      <span style="color:#4a4a5c;">·</span>
+      <span><span style="color:#b388ff;">protoc</span> → generate</span>
+      <span style="color:#4a4a5c;">·</span>
+      <span><span style="color:#b388ff;">moti</span> → orchestrate</span>
+    </div>
+    <div style="position:absolute;bottom:14px;right:18px;font-family:'JetBrains Mono',monospace;font-size:10.5px;color:#72728a;">
+      <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#7adfaa;margin-right:6px;vertical-align:middle;"></span>live
+    </div>
+  </div>
+</section>
+
+<!-- ── FEATURES ───────────────────────────────────────────────────────── -->
+<section id="features" style="border-top:1px solid rgba(179,136,255,0.16);padding:80px 56px;max-width:1280px;margin:0 auto;">
+  <p style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#b388ff;letter-spacing:0.14em;margin-bottom:12px;text-transform:uppercase;">What moti does</p>
+  <h2 style="font-size:38px;font-weight:700;letter-spacing:-0.025em;margin-bottom:48px;color:#e8e8f0;max-width:720px;text-wrap:balance;">Codegen, but you actually want to use it.</h2>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(179,136,255,0.16);border:1px solid rgba(179,136,255,0.16);border-radius:13px;overflow:hidden;">
+    <div class="feature-card">
+      <div class="icon-tile">⬡</div>
+      <div style="font-weight:700;font-size:15.5px;margin-bottom:8px;color:#e8e8f0;letter-spacing:-0.005em;">Wraps protoc, sanely</div>
+      <div style="font-size:13.5px;color:#72728a;line-height:1.7;">No more 14-flag invocations. moti reads a tiny config and runs protoc with the right plugins, paths, and includes — every time.</div>
+    </div>
+    <div class="feature-card">
+      <div class="icon-tile">⊕</div>
+      <div style="font-weight:700;font-size:15.5px;margin-bottom:8px;color:#e8e8f0;letter-spacing:-0.005em;">Pulls contracts from git</div>
+      <div style="font-size:13.5px;color:#72728a;line-height:1.7;">Reference proto/swagger files in any repo by URL + ref. moti fetches, caches, and version-pins them like a package manager.</div>
+    </div>
+    <div class="feature-card">
+      <div class="icon-tile">◎</div>
+      <div style="font-weight:700;font-size:15.5px;margin-bottom:8px;color:#e8e8f0;letter-spacing:-0.005em;">Multi-plugin output</div>
+      <div style="font-size:13.5px;color:#72728a;line-height:1.7;">Generate gRPC + HTTP gateway + OpenAPI + validators + your own protoc plugin — all in one pass, all configured per target.</div>
+    </div>
+    <div class="feature-card">
+      <div class="icon-tile">⊞</div>
+      <div style="font-weight:700;font-size:15.5px;margin-bottom:8px;color:#e8e8f0;letter-spacing:-0.005em;">Auto-installs binaries</div>
+      <div style="font-size:13.5px;color:#72728a;line-height:1.7;">Don't have protoc, protoc-gen-go, or your plugin of choice? moti detects, downloads, and pins the right versions for you.</div>
+    </div>
+    <div class="feature-card">
+      <div class="icon-tile">⊡</div>
+      <div style="font-weight:700;font-size:15.5px;margin-bottom:8px;color:#e8e8f0;letter-spacing:-0.005em;">Swagger → code</div>
+      <div style="font-size:13.5px;color:#72728a;line-height:1.7;">Point moti at an OpenAPI document and get typed clients/servers in any supported language — same workflow, same config.</div>
+    </div>
+    <div class="feature-card">
+      <div class="icon-tile">⬕</div>
+      <div style="font-weight:700;font-size:15.5px;margin-bottom:8px;color:#e8e8f0;letter-spacing:-0.005em;">CI-friendly</div>
+      <div style="font-size:13.5px;color:#72728a;line-height:1.7;">Deterministic output, locked plugin versions, cacheable artifacts. Drop moti in CI and never reproduce-codegen-on-Bob's-machine again.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── CONFIG ─────────────────────────────────────────────────────────── -->
+<section id="config" style="border-top:1px solid rgba(179,136,255,0.16);padding:80px 56px;max-width:1280px;margin:0 auto;">
+  <p style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#b388ff;letter-spacing:0.14em;margin-bottom:12px;text-transform:uppercase;">One file. Many targets.</p>
+  <h2 style="font-size:38px;font-weight:700;letter-spacing:-0.025em;margin-bottom:14px;color:#e8e8f0;max-width:720px;text-wrap:balance;">Configure once. Regenerate forever.</h2>
+  <p style="font-size:15.5px;color:#b0b0c8;line-height:1.7;max-width:640px;margin-bottom:40px;">
+    A single <span style="color:#e8e8f0;font-family:'JetBrains Mono',monospace;font-size:13px;">moti.yaml</span> declares which contracts to pull from where, and which languages and plugins to generate. <a href="index.md#config" class="scroll-link">Full reference →</a>
+  </p>
+  <div style="display:grid;grid-template-columns:1.3fr 1fr;gap:18px;">
+
+    <!-- YAML editor -->
+    <div style="background:#13131a;border:1px solid rgba(179,136,255,0.16);border-radius:11px;overflow:hidden;">
+      <div style="display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid rgba(179,136,255,0.16);background:#1c1c26;">
+        <span style="width:10px;height:10px;border-radius:50%;background:#ff5f57;display:block;"></span>
+        <span style="width:10px;height:10px;border-radius:50%;background:#febc2e;display:block;"></span>
+        <span style="width:10px;height:10px;border-radius:50%;background:#28c840;display:block;"></span>
+        <span style="margin-left:10px;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:#b0b0c8;">moti.yaml</span>
+        <span style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:10px;color:#b388ff;border:1px solid rgba(179,136,255,0.32);border-radius:4px;padding:1px 7px;">YAML</span>
+      </div>
+      <div style="padding:18px 22px;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.85;white-space:pre;">
+<div style="display:flex;"><span style="color:#4a4a5c;user-select:none;width:24px;text-align:right;margin-right:14px;flex-shrink:0;"> 1</span><span style="color:#4a4a5c;"># moti.yaml — single source of truth</span></div>
+<div style="display:flex;"><span style="color:#4a4a5c;user-select:none;width:24px;text-align:right;margin-right:14px;flex-shrink:0;"> 2</span><span>&nbsp;</span></div>
+<div style="display:flex;"><span style="color:#4a4a5c;user-select:none;width:24px;text-align:right;margin-right:14px;flex-shrink:0;"> 3</span><span><span style="color:#b388ff;">version</span><span style="color:#b0b0c8;">: </span><span style="color:#7adfaa;">1</span></span></div>
+<div style="display:flex;"><span style="color:#4a4a5c;user-select:none;width:24px;text-align:right;margin-right:14px;flex-shrink:0;"> 4</span><span>&nbsp;</span></div>
+<div style="display:flex;"><span style="color:#4a4a5c;user-select:none;width:24px;text-align:right;margin-right:14px;flex-shrink:0;"> 5</span><span><span style="color:#b388ff;">contracts</span><span style="color:#b0b0c8;">:</span></span></div>
+<div style="display:flex;"><span style="color:#4a4a5c;user-select:none;width:24px;text-align:right;margin-right:14px;flex-shrink:0;"> 6</span><span><span style="color:#72728a;">  - </span><span style="color:#0ab7ee;">name</span><span style="color:#b0b0c8;">: </span><span style="color:#e8e8f0;">orders</span></span></div>
+<div style="display:flex;"><span style="color:#4a4a5c;user-select:none;width:24px;text-align:right;margin-right:14px;flex-shrink:0;"> 7</span><span><span style="color:#72728a;">    </span><span style="color:#0ab7ee;">git</span><span style="color:#b0b0c8;">:   </span><span style="color:#e8e8f0;">github.com/acme/contracts</span></span></div>
+<div style="display:flex;"><span style="color:#4a4a5c;user-select:none;width:24px;text-align:right;margin-right:14px;flex-shrink:0;"> 8</span><span><span style="color:#72728a;">    </span><span style="color:#0ab7ee;">ref</span><span style="color:#b0b0c8;">:   </span><span style="color:#7adfaa;">v1.4.0</span></span></div>
+<div style="display:flex;"><span style="color:#4a4a5c;user-select:none;width:24px;text-align:right;margin-right:14px;flex-shrink:0;"> 9</span><span><span style="color:#72728a;">    </span><span style="color:#0ab7ee;">path</span><span style="color:#b0b0c8;">:  </span><span style="color:#e8e8f0;">proto/orders</span></span></div>
+<div style="display:flex;"><span style="color:#4a4a5c;user-select:none;width:24px;text-align:right;margin-right:14px;flex-shrink:0;">10</span><span><span style="color:#72728a;">  - </span><span style="color:#0ab7ee;">name</span><span style="color:#b0b0c8;">: </span><span style="color:#e8e8f0;">billing</span></span></div>
+<div style="display:flex;"><span style="color:#4a4a5c;user-select:none;width:24px;text-align:right;margin-right:14px;flex-shrink:0;">11</span><span><span style="color:#72728a;">    </span><span style="color:#0ab7ee;">git</span><span style="color:#b0b0c8;">:   </span><span style="color:#e8e8f0;">git.redsock.ru/billing-api</span></span></div>
+<div style="display:flex;"><span style="color:#4a4a5c;user-select:none;width:24px;text-align:right;margin-right:14px;flex-shrink:0;">12</span><span><span style="color:#72728a;">    </span><span style="color:#0ab7ee;">ref</span><span style="color:#b0b0c8;">:   </span><span style="color:#7adfaa;">main</span></span></div>
+<div style="display:flex;"><span style="color:#4a4a5c;user-select:none;width:24px;text-align:right;margin-right:14px;flex-shrink:0;">13</span><span>&nbsp;</span></div>
+<div style="display:flex;"><span style="color:#4a4a5c;user-select:none;width:24px;text-align:right;margin-right:14px;flex-shrink:0;">14</span><span><span style="color:#b388ff;">targets</span><span style="color:#b0b0c8;">:</span></span></div>
+<div style="display:flex;"><span style="color:#4a4a5c;user-select:none;width:24px;text-align:right;margin-right:14px;flex-shrink:0;">15</span><span><span style="color:#0ab7ee;">  go</span><span style="color:#b0b0c8;">:</span></span></div>
+<div style="display:flex;"><span style="color:#4a4a5c;user-select:none;width:24px;text-align:right;margin-right:14px;flex-shrink:0;">16</span><span><span style="color:#72728a;">    </span><span style="color:#0ab7ee;">plugins</span><span style="color:#b0b0c8;">: </span><span style="color:#e8e8f0;">[protoc-gen-go, protoc-gen-go-grpc]</span></span></div>
+<div style="display:flex;"><span style="color:#4a4a5c;user-select:none;width:24px;text-align:right;margin-right:14px;flex-shrink:0;">17</span><span><span style="color:#72728a;">    </span><span style="color:#0ab7ee;">out</span><span style="color:#b0b0c8;">:     </span><span style="color:#e8e8f0;">./internal/pb</span></span></div>
+<div style="display:flex;"><span style="color:#4a4a5c;user-select:none;width:24px;text-align:right;margin-right:14px;flex-shrink:0;">18</span><span><span style="color:#0ab7ee;">  ts</span><span style="color:#b0b0c8;">:</span></span></div>
+<div style="display:flex;"><span style="color:#4a4a5c;user-select:none;width:24px;text-align:right;margin-right:14px;flex-shrink:0;">19</span><span><span style="color:#72728a;">    </span><span style="color:#0ab7ee;">plugins</span><span style="color:#b0b0c8;">: </span><span style="color:#e8e8f0;">[protoc-gen-ts, protoc-gen-grpc-web]</span></span></div>
+<div style="display:flex;"><span style="color:#4a4a5c;user-select:none;width:24px;text-align:right;margin-right:14px;flex-shrink:0;">20</span><span><span style="color:#72728a;">    </span><span style="color:#0ab7ee;">out</span><span style="color:#b0b0c8;">:     </span><span style="color:#e8e8f0;">./web/src/pb</span></span></div>
+<div style="display:flex;"><span style="color:#4a4a5c;user-select:none;width:24px;text-align:right;margin-right:14px;flex-shrink:0;">21</span><span><span style="color:#0ab7ee;">  openapi</span><span style="color:#b0b0c8;">:</span></span></div>
+<div style="display:flex;"><span style="color:#4a4a5c;user-select:none;width:24px;text-align:right;margin-right:14px;flex-shrink:0;">22</span><span><span style="color:#72728a;">    </span><span style="color:#0ab7ee;">plugins</span><span style="color:#b0b0c8;">: </span><span style="color:#e8e8f0;">[protoc-gen-openapiv2]</span></span></div>
+<div style="display:flex;"><span style="color:#4a4a5c;user-select:none;width:24px;text-align:right;margin-right:14px;flex-shrink:0;">23</span><span><span style="color:#72728a;">    </span><span style="color:#0ab7ee;">out</span><span style="color:#b0b0c8;">:     </span><span style="color:#e8e8f0;">./docs/openapi</span></span></div>
+      </div>
+    </div>
+
+    <!-- terminal -->
+    <div style="background:#13131a;border:1px solid rgba(179,136,255,0.16);border-radius:11px;overflow:hidden;display:flex;flex-direction:column;">
+      <div style="display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid rgba(179,136,255,0.16);background:#1c1c26;">
+        <span style="width:10px;height:10px;border-radius:50%;background:#ff5f57;display:block;"></span>
+        <span style="width:10px;height:10px;border-radius:50%;background:#febc2e;display:block;"></span>
+        <span style="width:10px;height:10px;border-radius:50%;background:#28c840;display:block;"></span>
+        <span style="margin-left:10px;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:#b0b0c8;">~/proj — moti</span>
+      </div>
+      <div style="padding:18px 22px;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:2;flex:1;">
+        <div style="display:flex;gap:10px;align-items:baseline;"><span style="color:#72728a;flex-shrink:0;font-weight:600;">$</span><span style="color:#e8e8f0;">moti pull</span><span style="color:#72728a;margin-left:auto;font-size:11.5px;">fetching contracts from 2 git remotes…</span></div>
+        <div style="display:flex;gap:10px;align-items:baseline;"><span style="color:#7adfaa;flex-shrink:0;font-weight:600;">✓</span><span style="color:#7adfaa;">orders @ v1.4.0</span><span style="color:#72728a;margin-left:auto;font-size:11.5px;">13 files cached</span></div>
+        <div style="display:flex;gap:10px;align-items:baseline;"><span style="color:#7adfaa;flex-shrink:0;font-weight:600;">✓</span><span style="color:#7adfaa;">billing @ main</span><span style="color:#72728a;margin-left:auto;font-size:11.5px;">7 files cached</span></div>
+        <div style="display:flex;gap:10px;align-items:baseline;"><span style="color:#72728a;flex-shrink:0;font-weight:600;">$</span><span style="color:#e8e8f0;">moti gen</span><span style="color:#72728a;margin-left:auto;font-size:11.5px;">running 3 targets in parallel</span></div>
+        <div style="display:flex;gap:10px;align-items:baseline;"><span style="color:#7adfaa;flex-shrink:0;font-weight:600;">✓</span><span style="color:#7adfaa;">go      → 42 files</span></div>
+        <div style="display:flex;gap:10px;align-items:baseline;"><span style="color:#7adfaa;flex-shrink:0;font-weight:600;">✓</span><span style="color:#7adfaa;">ts      → 38 files</span></div>
+        <div style="display:flex;gap:10px;align-items:baseline;"><span style="color:#7adfaa;flex-shrink:0;font-weight:600;">✓</span><span style="color:#7adfaa;">openapi → 2 specs</span></div>
+        <div style="display:flex;gap:10px;align-items:baseline;"><span style="color:#b388ff;flex-shrink:0;font-weight:600;">$</span><span style="display:inline-block;width:8px;height:14px;background:#b388ff;animation:blink 1s step-end infinite;margin-top:2px;"></span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── REGISTRY ───────────────────────────────────────────────────────── -->
+<section style="border-top:1px solid rgba(179,136,255,0.16);padding:80px 56px;max-width:1280px;margin:0 auto;">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;">
+    <div>
+      <p style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#b388ff;letter-spacing:0.14em;margin-bottom:12px;text-transform:uppercase;">Contracts as packages</p>
+      <h2 style="font-size:34px;font-weight:700;letter-spacing:-0.025em;margin-bottom:18px;color:#e8e8f0;text-wrap:balance;">
+        Your proto files live in git.<br>
+        <span style="color:#b388ff;">moti treats them like dependencies.</span>
+      </h2>
+      <p style="font-size:15px;color:#b0b0c8;line-height:1.75;margin-bottom:22px;">
+        Reference contracts by repo + ref + path. moti clones, caches, version-pins, and re-pulls on bump. No more copying .proto files between repos. No more drift between teams.
+      </p>
+      <ul style="list-style:none;display:flex;flex-direction:column;gap:10px;">
+        <li style="display:flex;gap:11px;align-items:flex-start;font-size:13.5px;color:#b0b0c8;"><span style="width:18px;height:18px;border-radius:50%;background:rgba(179,136,255,0.10);border:1px solid rgba(179,136,255,0.32);display:flex;align-items:center;justify-content:center;color:#b388ff;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px;">✓</span>Pin to tags, branches, or commit SHAs</li>
+        <li style="display:flex;gap:11px;align-items:flex-start;font-size:13.5px;color:#b0b0c8;"><span style="width:18px;height:18px;border-radius:50%;background:rgba(179,136,255,0.10);border:1px solid rgba(179,136,255,0.32);display:flex;align-items:center;justify-content:center;color:#b388ff;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px;">✓</span>Pull from GitHub, GitLab, gitea, or any git remote</li>
+        <li style="display:flex;gap:11px;align-items:flex-start;font-size:13.5px;color:#b0b0c8;"><span style="width:18px;height:18px;border-radius:50%;background:rgba(179,136,255,0.10);border:1px solid rgba(179,136,255,0.32);display:flex;align-items:center;justify-content:center;color:#b388ff;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px;">✓</span>Lockfile keeps the team in sync</li>
+        <li style="display:flex;gap:11px;align-items:flex-start;font-size:13.5px;color:#b0b0c8;"><span style="width:18px;height:18px;border-radius:50%;background:rgba(179,136,255,0.10);border:1px solid rgba(179,136,255,0.32);display:flex;align-items:center;justify-content:center;color:#b388ff;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px;">✓</span>Cache is local — no central registry needed</li>
+      </ul>
+    </div>
+
+    <!-- cache card -->
+    <div style="background:#13131a;border:1px solid rgba(179,136,255,0.16);border-radius:13px;overflow:hidden;">
+      <div style="padding:14px 18px;border-bottom:1px solid rgba(179,136,255,0.16);font-family:'JetBrains Mono',monospace;font-size:11.5px;color:#72728a;display:flex;justify-content:space-between;">
+        <span><span style="color:#b388ff;">~/.moti/cache</span> · contracts</span><span>4 entries</span>
+      </div>
+      <div style="padding:16px 18px;border-bottom:1px solid rgba(179,136,255,0.16);display:flex;align-items:center;gap:14px;">
+        <div style="width:34px;height:34px;border-radius:7px;background:#1c1c26;border:1px solid rgba(179,136,255,0.16);display:flex;align-items:center;justify-content:center;color:#b388ff;font-family:'JetBrains Mono',monospace;font-size:13px;">⎇</div>
+        <div style="flex:1;min-width:0;"><div style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#e8e8f0;margin-bottom:3px;">acme/contracts</div><div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#72728a;display:flex;gap:10px;"><span><span style="color:#4a4a5c;">ref:</span> <span style="color:#7adfaa;">v1.4.0</span></span><span><span style="color:#4a4a5c;">files:</span> 13</span></div></div>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#7adfaa;border:1px solid rgba(122,223,170,0.3);border-radius:4px;padding:2px 8px;letter-spacing:0.04em;">cached</span>
+      </div>
+      <div style="padding:16px 18px;border-bottom:1px solid rgba(179,136,255,0.16);display:flex;align-items:center;gap:14px;">
+        <div style="width:34px;height:34px;border-radius:7px;background:#1c1c26;border:1px solid rgba(179,136,255,0.16);display:flex;align-items:center;justify-content:center;color:#b388ff;font-family:'JetBrains Mono',monospace;font-size:13px;">⎇</div>
+        <div style="flex:1;min-width:0;"><div style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#e8e8f0;margin-bottom:3px;">redsock/billing-api</div><div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#72728a;display:flex;gap:10px;"><span><span style="color:#4a4a5c;">ref:</span> <span style="color:#7adfaa;">main</span></span><span><span style="color:#4a4a5c;">files:</span> 7</span></div></div>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#7adfaa;border:1px solid rgba(122,223,170,0.3);border-radius:4px;padding:2px 8px;letter-spacing:0.04em;">cached</span>
+      </div>
+      <div style="padding:16px 18px;border-bottom:1px solid rgba(179,136,255,0.16);display:flex;align-items:center;gap:14px;">
+        <div style="width:34px;height:34px;border-radius:7px;background:#1c1c26;border:1px solid rgba(179,136,255,0.16);display:flex;align-items:center;justify-content:center;color:#b388ff;font-family:'JetBrains Mono',monospace;font-size:13px;">⎇</div>
+        <div style="flex:1;min-width:0;"><div style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#e8e8f0;margin-bottom:3px;">redsock/notifications</div><div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#72728a;display:flex;gap:10px;"><span><span style="color:#4a4a5c;">ref:</span> <span style="color:#7adfaa;">v0.9.2</span></span><span><span style="color:#4a4a5c;">files:</span> 4</span></div></div>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#b388ff;border:1px solid rgba(179,136,255,0.32);border-radius:4px;padding:2px 8px;letter-spacing:0.04em;display:flex;align-items:center;gap:5px;"><span style="width:5px;height:5px;border-radius:50%;background:#b388ff;animation:blink 1s step-end infinite;"></span>pulling</span>
+      </div>
+      <div style="padding:16px 18px;display:flex;align-items:center;gap:14px;">
+        <div style="width:34px;height:34px;border-radius:7px;background:#1c1c26;border:1px solid rgba(179,136,255,0.16);display:flex;align-items:center;justify-content:center;color:#b388ff;font-family:'JetBrains Mono',monospace;font-size:13px;">⎇</div>
+        <div style="flex:1;min-width:0;"><div style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#e8e8f0;margin-bottom:3px;">gateway/openapi-specs</div><div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#72728a;display:flex;gap:10px;"><span><span style="color:#4a4a5c;">ref:</span> <span style="color:#7adfaa;">main</span></span><span><span style="color:#4a4a5c;">files:</span> 18</span></div></div>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#7adfaa;border:1px solid rgba(122,223,170,0.3);border-radius:4px;padding:2px 8px;letter-spacing:0.04em;">cached</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA BANNER ─────────────────────────────────────────────────────── -->
+<div style="margin:40px auto 0;max-width:1168px;padding:0 56px;">
+  <div style="padding:56px 48px;border-radius:16px;background:radial-gradient(120% 200% at 0% 0%, rgba(179,136,255,0.10) 0%, transparent 55%), #13131a;border:1px solid rgba(179,136,255,0.32);display:grid;grid-template-columns:1.3fr 1fr;gap:48px;align-items:center;">
+    <div>
+      <h2 style="font-size:32px;font-weight:700;letter-spacing:-0.025em;color:#e8e8f0;margin-bottom:14px;text-wrap:balance;">Install once. Never touch a protoc flag again.</h2>
+      <p style="font-size:14.5px;color:#b0b0c8;line-height:1.7;margin-bottom:24px;">One Go binary. One yaml. Any language protoc supports.</p>
+      <div style="display:flex;gap:11px;flex-wrap:wrap;">
+        <a href="index.md#quickstart" style="text-decoration:none;"><button style="background:#b388ff;border:none;border-radius:9px;color:#0c0c0f;font-family:'Comfortaa',sans-serif;font-weight:700;font-size:14px;padding:12px 26px;cursor:pointer;">Quickstart →</button></a>
+        <button style="background:transparent;border:1px solid rgba(179,136,255,0.32);border-radius:9px;color:#e8e8f0;font-family:'Comfortaa',sans-serif;font-weight:600;font-size:14px;padding:12px 22px;cursor:pointer;">GitHub ↗</button>
+      </div>
+    </div>
+    <div style="background:#0c0c0f;border:1px solid rgba(179,136,255,0.16);border-radius:10px;padding:18px 20px;font-family:'JetBrains Mono',monospace;font-size:13px;color:#e8e8f0;">
+      <div style="color:#72728a;font-size:11px;margin-bottom:8px;letter-spacing:0.06em;text-transform:uppercase;">Install</div>
+      <div><span style="color:#b388ff;">$</span> go install go.redsock.ru/moti@latest</div>
+      <div style="color:#4a4a5c;font-size:11px;margin-top:14px;margin-bottom:6px;letter-spacing:0.06em;text-transform:uppercase;">Then</div>
+      <div><span style="color:#b388ff;">$</span> moti init  <span style="color:#4a4a5c;"># scaffolds moti.yaml</span></div>
+      <div><span style="color:#b388ff;">$</span> moti gen   <span style="color:#4a4a5c;"># pull + codegen</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── FOOTER ─────────────────────────────────────────────────────────── -->
+<footer style="padding:56px 56px 40px;max-width:1280px;margin:56px auto 0;border-top:1px solid rgba(179,136,255,0.16);display:flex;justify-content:space-between;align-items:flex-end;gap:40px;flex-wrap:wrap;">
+  <div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+      <svg width="22" height="22" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+        <defs>
+          <linearGradient id="g1f" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d3b8ff"/><stop offset="1" stop-color="#7a4dff"/></linearGradient>
+          <linearGradient id="g2f" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#b388ff" stop-opacity=".95"/><stop offset="1" stop-color="#5b2db8" stop-opacity=".7"/></linearGradient>
+        </defs>
+        <path d="M32 4 L56 18 L56 46 L32 60 L8 46 L8 18 Z" fill="none" stroke="url(#g1f)" stroke-width="3.2" stroke-linejoin="round"/>
+        <path d="M32 18 L46 26 L46 42 L32 50 L18 42 L18 26 Z" fill="url(#g2f)" opacity="0.95"/>
+        <path d="M32 28 L32 40 M32 40 L26 36 M32 40 L38 36" stroke="#0c0c0f" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span style="font-weight:700;font-size:14px;color:#e8e8f0;">moti</span>
+    </div>
+    <div style="font-size:12.5px;color:#72728a;line-height:1.7;max-width:380px;">
+      A redsock tool. Built alongside <a href="#" style="color:#0ab7ee;text-decoration:none;">VervStack</a>, the node manager for self-hosted services.
+    </div>
+  </div>
+  <div style="display:flex;gap:56px;font-family:'JetBrains Mono',monospace;font-size:12px;color:#72728a;">
+    <div>
+      <div style="color:#4a4a5c;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:10px;">Product</div>
+      <div style="display:flex;flex-direction:column;gap:7px;">
+        <a href="#features" style="color:#b0b0c8;text-decoration:none;">Features</a>
+        <a href="#pipeline" style="color:#b0b0c8;text-decoration:none;">Pipeline</a>
+        <a href="#config" style="color:#b0b0c8;text-decoration:none;">Config</a>
+      </div>
+    </div>
+    <div>
+      <div style="color:#4a4a5c;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:10px;">Resources</div>
+      <div style="display:flex;flex-direction:column;gap:7px;">
+        <a href="index.md" style="color:#b0b0c8;text-decoration:none;">Docs</a>
+        <a href="index.md#quickstart" style="color:#b0b0c8;text-decoration:none;">Quickstart</a>
+        <a href="index.md#config" style="color:#b0b0c8;text-decoration:none;">Configuration</a>
+      </div>
+    </div>
+    <div>
+      <div style="color:#4a4a5c;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:10px;">Source</div>
+      <div style="display:flex;flex-direction:column;gap:7px;">
+        <a href="#" style="color:#b0b0c8;text-decoration:none;">GitHub ↗</a>
+        <a href="#" style="color:#b0b0c8;text-decoration:none;">Issues ↗</a>
+        <a href="#" style="color:#b0b0c8;text-decoration:none;">Releases ↗</a>
+      </div>
+    </div>
+  </div>
+  <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#4a4a5c;width:100%;text-align:right;margin-top:12px;">
+    moti.redsock.ru · v0.1 · MIT
+  </div>
+</footer>
+
+<script>
+document.getElementById('copy-btn').addEventListener('click', function() {
+  navigator.clipboard?.writeText('go install go.redsock.ru/moti@latest');
+  this.textContent = '✓';
+  setTimeout(() => { this.textContent = 'copy'; }, 1200);
+});
+</script>
+</body>
+</html>
