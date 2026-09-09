@@ -22,6 +22,10 @@ func main() {
 		Short:   "moti - usage info",
 		Long:    "moti - description info",
 		Version: version.System(),
+		// A failing sub-command surfaces through the single log.Fatal below;
+		// cobra should not also print usage text or the error on its own.
+		SilenceUsage:  true,
+		SilenceErrors: true,
 	}
 
 	rootCmd.PersistentFlags().

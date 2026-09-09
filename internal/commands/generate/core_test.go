@@ -5,6 +5,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	"go.redsock.ru/moti/internal/adapters/console"
 	"go.redsock.ru/moti/internal/commands"
 	"go.redsock.ru/moti/internal/config"
 	"go.redsock.ru/moti/internal/mocks"
@@ -63,6 +64,63 @@ func TestGenerate(t *testing.T) {
 
 	err := c.Generate(ctx)
 	require.NoError(t, err)
+}
+
+func TestGenerate_RunCmdError(t *testing.T) {
+	ctx := t.Context()
+
+	expectedParams := []string{
+		"-I test",
+		"test/test/file.proto",
+	}
+
+	runErr := &console.RunError{
+		Command: protocBin,
+		Stderr:  "some-plugin: Plugin failed with status code 1.",
+	}
+
+	mConsole := mocks.NewConsoleMock(t)
+	mConsole.RunCmdMock.Expect(ctx, ".", protocBin, expectedParams...).
+		Return("", runErr)
+
+	mStorage := mocks.NewIStorageMock(t)
+	mStorage.IsModuleInstalledMock.Return(true, nil)
+	mStorage.GetInstallDirMock.Set(
+		func(moduleName string, revisionVersion string) string {
+			return "/tmp/mod/" + moduleName
+		})
+
+	mLockFile := mocks.NewILockFileMock(t)
+	mLockFile.ReadMock.Return(models.LockFileInfo{Version: "v1.0.0"}, nil)
+
+	mWalker := mocks.NewIWalkerMock(t)
+	mWalker.WalkDirMock.Set(
+		func(root string, callback func(path string, err error) error) error {
+			return callback("test/file.proto", nil)
+		})
+
+	c := &Core{
+		Env: commands.Env{
+			MotiConfig: config.Config{
+				CachePath: "proto_modules",
+				Generate: []config.Generate{
+					{
+						Inputs: []config.Input{
+							{Directory: "test"},
+						},
+					},
+				},
+			},
+			Console:  mConsole,
+			Storage:  mStorage,
+			LockFile: mLockFile,
+			WorkDir:  ".",
+		},
+		Walker: mWalker,
+	}
+
+	err := c.Generate(ctx)
+	require.Error(t, err)
 }
 
 func TestGenerate_OpenAPI(t *testing.T) {
