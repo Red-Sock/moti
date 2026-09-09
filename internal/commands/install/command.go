@@ -1,10 +1,8 @@
 package install
 
 import (
-	"fmt"
-
-	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
+	"go.redsock.ru/rerrors"
 
 	"go.redsock.ru/moti/internal/commands"
 )
@@ -26,9 +24,7 @@ func (c Command) Command() *cobra.Command {
 func (c Command) Action(cmd *cobra.Command, _ []string) error {
 	err := c.Do(cmd)
 	if err != nil {
-		log.Fatal().
-			Err(err).
-			Msg("Failed to install dependencies")
+		return rerrors.Wrap(err)
 	}
 
 	return nil
@@ -41,7 +37,7 @@ func (c Command) Do(cmd *cobra.Command) error {
 
 	err := app.Install(cmd.Context())
 	if err != nil {
-		return fmt.Errorf("install: %w", err)
+		return rerrors.Wrap(err, "install")
 	}
 
 	return nil

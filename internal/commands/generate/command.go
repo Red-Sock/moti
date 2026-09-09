@@ -1,7 +1,6 @@
 package generate
 
 import (
-	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 	"go.redsock.ru/rerrors"
 
@@ -28,8 +27,7 @@ func (c Command) Command() *cobra.Command {
 func (c Command) Action(cmd *cobra.Command, args []string) error {
 	err := c.Do(cmd, args)
 	if err != nil {
-		log.Error().
-			Msg(err.Error())
+		return rerrors.Wrap(err)
 	}
 
 	return nil
